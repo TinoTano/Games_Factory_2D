@@ -5,6 +5,8 @@
 #include "InputModule.h"
 #include "RendererModule.h"
 #include "Globals.h"
+#include "FileSystemModule.h"
+#include "VulkanModule.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -26,10 +28,13 @@ Application::Application()
 
 	engine_state = EngineState::OnStop;
 
-	modules_list.reserve(3);
+	modules_list.resize(4);
 	modules_list.emplace_back(window_module = std::make_shared<WindowModule>("Window Module"));
 	modules_list.emplace_back(input_module = std::make_shared<InputModule>("Input Module"));
 	modules_list.emplace_back(renderer_module = std::make_shared<RendererModule>("Renderer Module"));
+	modules_list.emplace_back(vulkan_module = std::make_shared<VulkanModule>("Vulkan Module"));
+
+	file_system_module = std::make_shared<FileSystemModule>("File System Module");
 }
 
 Application::~Application()
@@ -44,8 +49,12 @@ bool Application::Init()
 	for (std::shared_ptr<Module> module : modules_list)
 	{
 		ret = module->Init();
-		//log post update failed
-		if (!ret) break;
+
+		if (!ret)
+		{
+			CONSOLE_ERROR("Module %s Init() failed", module->GetName());
+			break;
+		}
 	}
 
 	return ret;
@@ -58,8 +67,12 @@ bool Application::Start()
 	for (std::shared_ptr<Module> module : modules_list)
 	{
 		ret = module->Start();
-		//log post update failed
-		if (!ret) break;
+		
+		if (!ret)
+		{
+			CONSOLE_ERROR("Module %s Start() failed", module->GetName());
+			break;
+		}
 	}
 
 	return ret;
@@ -93,8 +106,12 @@ bool Application::PreUpdate()
 	for (std::shared_ptr<Module> module : modules_list)
 	{
 		ret = module->PreUpdate(delta_time);
-		//log post update failed
-		if (!ret) break;
+		
+		if (!ret)
+		{
+			CONSOLE_ERROR("Module %s PreUpdate() failed", module->GetName());
+			break;
+		}
 	}
 
 	return ret;
@@ -107,8 +124,12 @@ bool Application::Update()
 	for (std::shared_ptr<Module> module : modules_list)
 	{
 		ret = module->Update(delta_time);
-		//log post update failed
-		if (!ret) break;
+		
+		if (!ret)
+		{
+			CONSOLE_ERROR("Module %s Update() failed", module->GetName());
+			break;
+		}
 	}
 
 	return ret;
@@ -121,12 +142,19 @@ bool Application::PostUpdate()
 	for (std::shared_ptr<Module> module : modules_list)
 	{
 		ret = module->PostUpdate(delta_time);
-		//log post update failed
-		if (!ret) break;
+		
+		if (!ret)
+		{
+			CONSOLE_ERROR("Module %s PostUpdate() failed", module->GetName());
+			break;
+		}
 	}
 
-	StopNow();
-	PauseNow();
+	if(to_pause && !to_stop)
+		PauseNow();
+
+	if(to_stop)
+		StopNow();
 
 	frames++;
 	num_fps++;
@@ -155,8 +183,12 @@ bool Application::CleanUp()
 	for (std::shared_ptr<Module> module : modules_list)
 	{
 		ret = module->CleanUp();
-		//log post update failed
-		if (!ret) break;
+		
+		if (!ret)
+		{
+			CONSOLE_ERROR("Module %s CleanUp() failed", module->GetName());
+			break;
+		}
 	}
 
 	return ret;
@@ -214,8 +246,12 @@ bool Application::IsEditor() const
 
 void Application::StopNow()
 {
+	engine_state == EngineState::OnStop;
+	to_stop = false;
 }
 
 void Application::PauseNow()
 {
+	engine_state == EngineState::OnPause;
+	to_pause = false;
 }

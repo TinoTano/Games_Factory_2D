@@ -8,6 +8,8 @@ class Module;
 class WindowModule;
 class InputModule;
 class RendererModule;
+class FileSystemModule;
+class VulkanModule;
 
 class Application
 {
@@ -50,6 +52,8 @@ public:
 	std::shared_ptr<WindowModule> window_module;
 	std::shared_ptr<InputModule> input_module;
 	std::shared_ptr<RendererModule> renderer_module;
+	std::shared_ptr<FileSystemModule> file_system_module;
+	std::shared_ptr<VulkanModule> vulkan_module;
 
 private:
 	std::vector<std::shared_ptr<Module>> modules_list;

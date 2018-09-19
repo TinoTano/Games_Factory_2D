@@ -38,6 +38,11 @@ public:
 		return true;
 	}
 
+	const char* GetName() const
+	{
+		return module_name;
+	}
+
 private:
 	bool game_module;
 	const char* module_name;

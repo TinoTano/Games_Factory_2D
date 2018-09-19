@@ -132,20 +132,34 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="FileSystemModule.cpp" />
     <ClCompile Include="InputModule.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="md5.cpp" />
     <ClCompile Include="RendererModule.cpp" />
+    <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceManagerModule.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureImporter.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="VulkanModule.cpp" />
     <ClCompile Include="WindowModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="FileSystemModule.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="InputModule.h" />
+    <ClInclude Include="md5.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="RendererModule.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceManagerModule.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureImporter.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="VulkanModule.h" />
     <ClInclude Include="WindowModule.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
