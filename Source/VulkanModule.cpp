@@ -12,18 +12,75 @@ std::vector<uint16_t> indices = {
 0, 1, 2, 2, 3, 0
 };
 
+const int MAX_FRAMES_IN_FLIGHT = 2;
+
+VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback) {
+	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+	if (func != nullptr) {
+		return func(instance, pCreateInfo, pAllocator, pCallback);
+	}
+	else {
+		return VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+}
+
+void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks* pAllocator) {
+	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	if (func != nullptr) {
+		func(instance, callback, pAllocator);
+	}
+}
+
+static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+	// Select prefix depending on flags passed to the callback
+		// Note that multiple flags may be set for a single validation message
+	std::string prefix("");
+
+	// Error that may result in undefined behaviour
+	if (pCallbackData->flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
+	{
+		prefix += "ERROR: ";
+	};
+	// Warnings may hint at unexpected / non-spec API usage
+	if (pCallbackData->flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
+	{
+		prefix += "WARNING: ";
+	};
+	// May indicate sub-optimal usage of the API
+	if (pCallbackData->flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
+	{
+		prefix += "PERFORMANCE: ";
+	};
+	// Informal messages that may become handy during debugging
+	if (pCallbackData->flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
+	{
+		prefix += "INFO: ";
+	}
+	// Diagnostic info from the Vulkan loader and layers
+	// Usually not helpful in terms of API usage, but may help to debug layer and loader problems 
+	if (pCallbackData->flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
+	{
+		prefix += "DEBUG: ";
+	}
+
+	prefix += pCallbackData->pMessage;
+	return App->vulkanModule->PrintVKDebugMessages(prefix.c_str());
+}
+
 VulkanModule::VulkanModule(const char* module_name, bool game_module) : Module(module_name, game_module)
 {
-	vkPhysicalDevice = VK_NULL_HANDLE;
 	vkInstance = VK_NULL_HANDLE;
+	vkPhysicalDevice = VK_NULL_HANDLE;
 	vkLogicalDevice = VK_NULL_HANDLE;
 	vkGraphicsQueue = VK_NULL_HANDLE;
 	vkPresentationQueue = VK_NULL_HANDLE;
-	vkAllocator = VK_NULL_HANDLE;
 	vkDebugReport = VK_NULL_HANDLE;
+	vkSurface = VK_NULL_HANDLE;
+	vkSwapchain = VK_NULL_HANDLE;
+	vkPipelineLayout = VK_NULL_HANDLE;
 
-#if NDEBUG
-	enable_validation_layers = false;
+#ifdef NDEBUG
+	enableValidationLayers = false;
 #else
 	enableValidationLayers = true;
 #endif
@@ -55,8 +112,7 @@ bool VulkanModule::Init()
 bool VulkanModule::CleanUp()
 {
 #if _DEBUG
-	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(vkInstance, "vkDestroyDebugReportCallbackEXT");
-	vkDestroyDebugReportCallbackEXT(vkInstance, vkDebugReport, vkAllocator);
+	DestroyDebugUtilsMessengerEXT(vkInstance, vkDebugReport, nullptr);
 #endif
 
 	vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
@@ -76,22 +132,24 @@ bool VulkanModule::InitVulkan()
 	if (!CreateSwapChain()) return false;
 	CreateImageViews();
 	if (!CreateRenderPass()) return false;
+	if (!CreateDescriptorSetLayout()) return false;
 	if (!CreateGraphicsPipeline()) return false;
 	if (!CreateFramebuffers()) return false;
 	if (!CreateCommandPool()) return false;
 	if (!CreateVertexBuffer()) return false;
+	if (!CreateIndexBuffer()) return false;
 	if (!CreateCommandBuffers()) return false;
-	if (!CreateSemaphores()) return false;
+	if (!CreateSyncObjects()) return false;
 
 	return true;
 }
 
 bool VulkanModule::Render()
 {
-	vkQueueWaitIdle(vkPresentationQueue);
+	vkWaitForFences(vkLogicalDevice, 1, &vkInFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(vkLogicalDevice, vkSwapchain, std::numeric_limits<uint64_t>::max(), vkImageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(vkLogicalDevice, vkSwapchain, std::numeric_limits<uint64_t>::max(), vkImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		RecreateSwapChain(vkSwapchain);
@@ -105,7 +163,7 @@ bool VulkanModule::Render()
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore waitSemaphores[] = { vkImageAvailableSemaphore };
+	VkSemaphore waitSemaphores[] = { vkImageAvailableSemaphores[currentFrame] };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
@@ -113,11 +171,13 @@ bool VulkanModule::Render()
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
 
-	VkSemaphore signalSemaphores[] = { vkRenderFinishedSemaphore };
+	VkSemaphore signalSemaphores[] = { vkRenderFinishedSemaphores[currentFrame] };
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	if (vkQueueSubmit(vkGraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+	vkResetFences(vkLogicalDevice, 1, &vkInFlightFences[currentFrame]);
+
+	if (vkQueueSubmit(vkGraphicsQueue, 1, &submitInfo, vkInFlightFences[currentFrame]) != VK_SUCCESS) {
 		CONSOLE_ERROR("failed to submit draw command buffer!");
 		return true;
 	}
@@ -142,7 +202,9 @@ bool VulkanModule::Render()
 		CONSOLE_ERROR("failed to present swap chain image!");
 		return true;
 	}
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
+	vkQueueWaitIdle(vkPresentationQueue);
 	return true;
 }
 
@@ -165,16 +227,27 @@ bool VulkanModule::CreateVulkanInstance()
 	const char** glfwExtensions;
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
+	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
 	VkInstanceCreateInfo instanceInfo;
 	instanceInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	instanceInfo.pNext = nullptr;
 	instanceInfo.flags = 0;
 	instanceInfo.pApplicationInfo = &appInfo;
-	instanceInfo.enabledExtensionCount = glfwExtensionCount;
-	instanceInfo.ppEnabledExtensionNames = glfwExtensions;
-	instanceInfo.enabledLayerCount = 0;
 
-	VkResult result = vkCreateInstance(&instanceInfo, vkAllocator, &vkInstance);
+	if (enableValidationLayers) {
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+		instanceInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+		instanceInfo.ppEnabledLayerNames = validationLayers.data();
+	}
+	else {
+		instanceInfo.enabledLayerCount = 0;
+	}
+
+	instanceInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	instanceInfo.ppEnabledExtensionNames = extensions.data();
+
+	VkResult result = vkCreateInstance(&instanceInfo, nullptr, &vkInstance);
 
 	if (result != VK_SUCCESS)
 	{
@@ -189,15 +262,13 @@ bool VulkanModule::SetupDebugDrawCall()
 {
 	if (enableValidationLayers)
 	{
-		VkDebugReportCallbackCreateInfoEXT debugReportCallback = {};
-		debugReportCallback.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-		debugReportCallback.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-		debugReportCallback.pfnCallback = DebugCallback;
+		VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+		createInfo.pfnUserCallback = DebugCallback;
 
-		PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT =
-			(PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(vkInstance, "vkCreateDebugReportCallbackEXT");
-
-		VkResult result = vkCreateDebugReportCallbackEXT(vkInstance, &debugReportCallback, vkAllocator, &vkDebugReport);
+		VkResult result = CreateDebugUtilsMessengerEXT(vkInstance, &createInfo, nullptr, &vkDebugReport);
 		if (result != VK_SUCCESS)
 		{
 			PrintVkResults(result);
@@ -252,10 +323,10 @@ bool VulkanModule::CreateLogicalDevice()
 	QueueFamily family = FindQueueFamilies(vkPhysicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<int> uniqueQueueFamilies = { family.graphicsIndex, family.presentIndex };
+	std::set<uint32_t> uniqueQueueFamilies = { family.graphicsIndex, family.presentIndex };
 
 	float queuePriority = 1.0f;
-	for (int queueFamily : uniqueQueueFamilies) {
+	for (uint32_t queueFamily : uniqueQueueFamilies) {
 		VkDeviceQueueCreateInfo queueCreateInfo = {};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -320,7 +391,7 @@ bool VulkanModule::CreateSwapChain()
 	swapchainKHRCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	QueueFamily indices = FindQueueFamilies(vkPhysicalDevice);
-	uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsIndex, (uint32_t)indices.presentIndex };
+	uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsIndex, (uint32_t)indices.presentIndex};
 
 	if (indices.graphicsIndex != indices.presentIndex) {
 		swapchainKHRCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -409,7 +480,7 @@ bool VulkanModule::CreateRenderPass()
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;
-	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+	//subpass.pDepthStencilAttachment = &depthAttachmentRef;
 
 	VkSubpassDependency dependency = {};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -419,7 +490,7 @@ bool VulkanModule::CreateRenderPass()
 	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+	std::array<VkAttachmentDescription, 1> attachments = { colorAttachment/*, depthAttachment*/ };
 	VkRenderPassCreateInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -433,6 +504,38 @@ bool VulkanModule::CreateRenderPass()
 	if (result != VK_SUCCESS)
 	{
 		CONSOLE_ERROR("failed to create render pass!");
+		PrintVkResults(result);
+		return false;
+	}
+
+	return true;
+}
+
+bool VulkanModule::CreateDescriptorSetLayout() {
+	VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+	uboLayoutBinding.binding = 0;
+	uboLayoutBinding.descriptorCount = 1;
+	uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uboLayoutBinding.pImmutableSamplers = nullptr;
+	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+	samplerLayoutBinding.binding = 1;
+	samplerLayoutBinding.descriptorCount = 1;
+	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	samplerLayoutBinding.pImmutableSamplers = nullptr;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	layoutInfo.pBindings = bindings.data();
+
+	VkResult result = vkCreateDescriptorSetLayout(vkLogicalDevice, &layoutInfo, nullptr, &vkDescriptorSetLayout);
+	if (result != VK_SUCCESS)
+	{
+		CONSOLE_ERROR("failed to create descriptor layout!");
 		PrintVkResults(result);
 		return false;
 	}
@@ -537,8 +640,8 @@ bool VulkanModule::CreateGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 1;
-	pipelineLayoutInfo.pSetLayouts = &vkDescriptorSetLayout;
+	//pipelineLayoutInfo.setLayoutCount = 1;
+	//pipelineLayoutInfo.pSetLayouts = &vkDescriptorSetLayout;
 
 	VkResult result = vkCreatePipelineLayout(vkLogicalDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout);
 	if(result != VK_SUCCESS) {
@@ -669,12 +772,18 @@ bool VulkanModule::CreateCommandBuffers()
 		renderPassInfo.renderArea.offset = { 0, 0 };
 		renderPassInfo.renderArea.extent = vkSwapchainExtent;
 
-		std::array<VkClearValue, 2> clearValues = {};
+		/*std::array<VkClearValue, 1> clearValues = {};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		clearValues[1].depthStencil = { 1.0f, 0 };*/
 
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		/*renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.pClearValues = clearValues.data();*/
+
+		VkClearValue clearValues;
+		clearValues.color = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clearValues;
 
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
@@ -684,9 +793,9 @@ bool VulkanModule::CreateCommandBuffers()
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &vkDescriptorSets[i], 0, nullptr);
+		//vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &vkDescriptorSets[i], 0, nullptr);
 
 		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
@@ -704,25 +813,47 @@ bool VulkanModule::CreateCommandBuffers()
 	return true;
 }
 
-bool VulkanModule::CreateSemaphores()
+bool VulkanModule::CreateSyncObjects()
 {
+	vkImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	vkRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	vkInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
 	VkSemaphoreCreateInfo semaphoreInfo = {};
 	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	VkResult result = vkCreateSemaphore(vkLogicalDevice, &semaphoreInfo, nullptr, &vkImageAvailableSemaphore);
-	if (result != VK_SUCCESS)
-	{
-		CONSOLE_ERROR("failed to create image available semaphores!");
-		PrintVkResults(result);
-		return false;
-	}
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	result = vkCreateSemaphore(vkLogicalDevice, &semaphoreInfo, nullptr, &vkRenderFinishedSemaphore);
-	if (result != VK_SUCCESS)
-	{
-		CONSOLE_ERROR("failed to create render finished semaphores!");
-		PrintVkResults(result);
-		return false;
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		VkResult result = vkCreateSemaphore(vkLogicalDevice, &semaphoreInfo, nullptr, &vkImageAvailableSemaphores[i]);
+		if (result != VK_SUCCESS)
+		{
+			CONSOLE_ERROR("failed to create Image available semaphore!");
+			PrintVkResults(result);
+			return false;
+		}
+		else
+		{
+			result = vkCreateSemaphore(vkLogicalDevice, &semaphoreInfo, nullptr, &vkRenderFinishedSemaphores[i]);
+			if (result != VK_SUCCESS)
+			{
+				CONSOLE_ERROR("failed to create render available semaphore!");
+				PrintVkResults(result);
+				return false;
+			}
+			else
+			{
+				result = vkCreateFence(vkLogicalDevice, &fenceInfo, nullptr, &vkInFlightFences[i]);
+				if (result != VK_SUCCESS)
+				{
+					CONSOLE_ERROR("failed to create in flight fences!");
+					PrintVkResults(result);
+					return false;
+				}
+			}
+		}
 	}
 
 	return true;
@@ -831,14 +962,20 @@ VulkanModule::QueueFamily VulkanModule::FindQueueFamilies(VkPhysicalDevice devic
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
 		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-			ret.graphicsIndex = i;
+			int j = 0;
+			if (i == 0) j = 1;
+			else j = i;
+			ret.graphicsIndex = j;
 		}
 
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vkSurface, &presentSupport);
 
 		if (queueFamily.queueCount > 0 && presentSupport) {
-			ret.presentIndex = i;
+			int j = 0;
+			if (i == 0) j = 1;
+			else j = i;
+			ret.presentIndex = j;
 		}
 
 		if (ret.IsValid()) {

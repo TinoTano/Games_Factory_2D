@@ -1,6 +1,7 @@
 #pragma once
 #include "Module.h"
 #include <vector>
+//#include <experimental/optional>
 #include "Application.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -12,8 +13,8 @@ public:
 
 	struct QueueFamily
 	{
-		int graphicsIndex = 0;
-		int presentIndex = 0;
+		uint32_t graphicsIndex = 0;
+		uint32_t presentIndex = 0;
 
 		bool IsValid()
 		{
@@ -35,6 +36,7 @@ public:
 	bool CleanUp();
 
 	bool Render();
+	bool PrintVKDebugMessages(const char * msg);
 
 private:
 
@@ -48,12 +50,13 @@ private:
 	bool CreateSwapChain();
 	void CreateImageViews();
 	bool CreateRenderPass();
+	bool CreateDescriptorSetLayout();
 	bool CreateGraphicsPipeline();
 	bool CreateCommandPool();
 	bool CreateDepthResources();
 	bool CreateFramebuffers();
 	bool CreateCommandBuffers();
-	bool CreateSemaphores();
+	bool CreateSyncObjects();
 
 	//Check if gpu is good for us
 	bool IsDeviceSuitable(VkPhysicalDevice device);
@@ -107,12 +110,6 @@ private:
 
 	void PrintVkResults(VkResult result);
 
-	bool PrintVKDebugMessages(const char* msg);
-
-	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
-		return App->vulkanModule->PrintVKDebugMessages(msg);
-	}
-
 private:
 	//The instance is the connection between your application and the Vulkan library
 	VkInstance vkInstance;
@@ -132,7 +129,6 @@ private:
 	//Surface where the images are rendered
 	VkSurfaceKHR vkSurface;
 
-	VkAllocationCallbacks* vkAllocator;
 	VkDebugReportCallbackEXT vkDebugReport;
 
 	//The swap chain is essentially a queue of images that are waiting to be presented to the screen
@@ -153,8 +149,6 @@ private:
 	VkPipelineLayout vkPipelineLayout;
 	VkPipeline vkGraphicsPipeline;
 	VkCommandPool vkCommandPool;
-	VkSemaphore vkImageAvailableSemaphore;
-	VkSemaphore vkRenderFinishedSemaphore;
 
 	bool enableValidationLayers;
 
@@ -174,5 +168,11 @@ private:
 	VkDeviceMemory vertexBufferMemory;
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
+
+	std::vector<VkSemaphore> vkImageAvailableSemaphores;
+	std::vector<VkSemaphore> vkRenderFinishedSemaphores;
+	std::vector<VkFence> vkInFlightFences;
+
+	int currentFrame = 0;
 };
 
