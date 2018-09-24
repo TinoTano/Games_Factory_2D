@@ -104,5 +104,6 @@
     <ClInclude Include="VulkanModule.h">
       <Filter>Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Vertex.h" />
   </ItemGroup>
 </Project>

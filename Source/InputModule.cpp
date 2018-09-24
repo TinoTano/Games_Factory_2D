@@ -17,7 +17,7 @@ bool InputModule::PreUpdate(float delta_time)
 {
 	bool ret = true;
 
-	if (glfwWindowShouldClose(App->window_module->engine_window))
+	if (glfwWindowShouldClose(App->windowModule->engineWindow))
 	{
 		App->QuitEngine();
 	}

@@ -1,6 +1,10 @@
 #include "Texture.h"
 
-Texture::Texture(uint32_t width, uint32_t height, uint8_t* texture_data, std::string name, std::string assets_path, std::string library_path, ResourceType type = RESOURCE_TEXTURE) :
+Texture::Texture()
+{
+}
+
+Texture::Texture(uint32_t width, uint32_t height, uint8_t* texture_data, std::string name, std::string assets_path, std::string library_path, ResourceType type) :
 	width(width), height(height), texture_data(texture_data), Resource(name, assets_path, library_path, type)
 {
 }

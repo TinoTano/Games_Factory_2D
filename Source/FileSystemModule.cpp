@@ -35,9 +35,9 @@ std::string FileSystemModule::LoadBinaryTextFile(const char* file_path)
 
 void FileSystemModule::SaveFileTo(const char * final_path)
 {
-	fs::path path(old_path);
+	/*fs::path path(old_path);
 	if (path.compare(new_path) != 0)
-		fs::copy(old_path, new_path, fs::copy_options::update_existing);
+		fs::copy(old_path, new_path, fs::copy_options::update_existing);*/
 }
 
 

@@ -14,27 +14,27 @@
 Application::Application()
 {
 	quit = false;
-	is_editor = true;
+	isEditor = true;
 
-	delta_time = 0;
-	num_fps = 0;
-	last_frame_ms = 0;
-	last_fps = 0;
+	deltaTime = 0;
+	numFps = 0;
+	lastFrameMs = 0;
+	lastFps = 0;
 	frames = 0;
-	capped_ms = 0;
+	cappedMs = 0;
 
-	to_stop = false;
-	to_pause = false;
+	toStop = false;
+	toPause = false;
 
-	engine_state = EngineState::OnStop;
+	engineState = EngineState::OnStop;
 
-	modules_list.resize(4);
-	modules_list.emplace_back(window_module = std::make_shared<WindowModule>("Window Module"));
-	modules_list.emplace_back(input_module = std::make_shared<InputModule>("Input Module"));
-	modules_list.emplace_back(renderer_module = std::make_shared<RendererModule>("Renderer Module"));
-	modules_list.emplace_back(vulkan_module = std::make_shared<VulkanModule>("Vulkan Module"));
+	modulesList.reserve(4);
+	modulesList.emplace_back(windowModule = std::make_shared<WindowModule>("Window Module"));
+	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
+	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
+	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
 
-	file_system_module = std::make_shared<FileSystemModule>("File System Module");
+	fileSystemModule = std::make_shared<FileSystemModule>("File System Module");
 }
 
 Application::~Application()
@@ -46,7 +46,7 @@ bool Application::Init()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modules_list)
+	for (std::shared_ptr<Module> module : modulesList)
 	{
 		ret = module->Init();
 
@@ -64,7 +64,7 @@ bool Application::Start()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modules_list)
+	for (std::shared_ptr<Module> module : modulesList)
 	{
 		ret = module->Start();
 		
@@ -80,8 +80,8 @@ bool Application::Start()
 
 bool Application::DoUpdate()
 {
-	delta_time = ms_timer.ReadAsSec();
-	ms_timer.StartTimer();
+	deltaTime = msTimer.ReadAsSec();
+	msTimer.StartTimer();
 
 	bool ret = true;
 
@@ -103,9 +103,9 @@ bool Application::PreUpdate()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modules_list)
+	for (std::shared_ptr<Module> module : modulesList)
 	{
-		ret = module->PreUpdate(delta_time);
+		ret = module->PreUpdate(deltaTime);
 		
 		if (!ret)
 		{
@@ -121,9 +121,9 @@ bool Application::Update()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modules_list)
+	for (std::shared_ptr<Module> module : modulesList)
 	{
-		ret = module->Update(delta_time);
+		ret = module->Update(deltaTime);
 		
 		if (!ret)
 		{
@@ -139,9 +139,9 @@ bool Application::PostUpdate()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modules_list)
+	for (std::shared_ptr<Module> module : modulesList)
 	{
-		ret = module->PostUpdate(delta_time);
+		ret = module->PostUpdate(deltaTime);
 		
 		if (!ret)
 		{
@@ -150,27 +150,27 @@ bool Application::PostUpdate()
 		}
 	}
 
-	if(to_pause && !to_stop)
+	if(toPause && !toStop)
 		PauseNow();
 
-	if(to_stop)
+	if(toStop)
 		StopNow();
 
 	frames++;
-	num_fps++;
+	numFps++;
 
-	if (fps_timer.ReadAsMS() >= 1000)
+	if (fpsTimer.ReadAsMS() >= 1000)
 	{
-		fps_timer.StartTimer();
-		last_fps = num_fps;
-		num_fps = 0;
+		fpsTimer.StartTimer();
+		lastFps = numFps;
+		numFps = 0;
 	}
 
-	last_frame_ms = ms_timer.ReadAsMS();
+	lastFrameMs = msTimer.ReadAsMS();
 
-	if (capped_ms > 0 && last_frame_ms < capped_ms)
+	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{
-		Sleep(capped_ms - last_frame_ms);
+		Sleep(cappedMs - lastFrameMs);
 	}
 
 	return ret;
@@ -180,7 +180,7 @@ bool Application::CleanUp()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modules_list)
+	for (std::shared_ptr<Module> module : modulesList)
 	{
 		ret = module->CleanUp();
 		
@@ -196,37 +196,37 @@ bool Application::CleanUp()
 
 void Application::Play()
 {
-	engine_state = EngineState::OnPlay;
+	engineState = EngineState::OnPlay;
 }
 
 void Application::Pause()
 {
-	to_pause = true;
+	toPause = true;
 }
 
 void Application::UnPause()
 {
-	engine_state = EngineState::OnPlay;
+	engineState = EngineState::OnPlay;
 }
 
 void Application::Stop()
 {
-	to_stop = true;
+	toStop = true;
 }
 
 bool Application::IsPlaying()
 {
-	return engine_state == EngineState::OnPlay;
+	return engineState == EngineState::OnPlay;
 }
 
 bool Application::IsPaused()
 {
-	return engine_state == EngineState::OnPause;
+	return engineState == EngineState::OnPause;
 }
 
 bool Application::IsStopped()
 {
-	return engine_state == EngineState::OnStop;
+	return engineState == EngineState::OnStop;
 }
 
 void Application::QuitEngine()
@@ -236,22 +236,22 @@ void Application::QuitEngine()
 
 float Application::GetFPS() const
 {
-	return num_fps;
+	return numFps;
 }
 
 bool Application::IsEditor() const
 {
-	return is_editor;
+	return isEditor;
 }
 
 void Application::StopNow()
 {
-	engine_state == EngineState::OnStop;
-	to_stop = false;
+	engineState == EngineState::OnStop;
+	toStop = false;
 }
 
 void Application::PauseNow()
 {
-	engine_state == EngineState::OnPause;
-	to_pause = false;
+	engineState == EngineState::OnPause;
+	toPause = false;
 }

@@ -9,6 +9,7 @@ public:
 		RESOURCE_NONE, RESOURCE_TEXTURE
 	};
 
+	Resource();
 	Resource(std::string name, std::string assets_path, std::string library_path, ResourceType type);
 	~Resource();
 

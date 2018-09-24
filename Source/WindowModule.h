@@ -14,6 +14,6 @@ public:
 	bool CleanUp();
 
 public:
-	GLFWwindow* engine_window;
+	GLFWwindow* engineWindow;
 };
 

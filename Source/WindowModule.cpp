@@ -19,7 +19,7 @@ bool WindowModule::Init()
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-	engine_window = glfwCreateWindow(1200, 900, "Games Factory 2D", nullptr, nullptr);
+	engineWindow = glfwCreateWindow(1200, 900, "Games Factory 2D", nullptr, nullptr);
 
 	return ret;
 }
@@ -28,7 +28,7 @@ bool WindowModule::CleanUp()
 {
 	bool ret = true;
 
-	glfwDestroyWindow(engine_window);
+	glfwDestroyWindow(engineWindow);
 	glfwTerminate();
 
 	return ret;

@@ -49,33 +49,33 @@ private:
 	void PauseNow();
 
 public:
-	std::shared_ptr<WindowModule> window_module;
-	std::shared_ptr<InputModule> input_module;
-	std::shared_ptr<RendererModule> renderer_module;
-	std::shared_ptr<FileSystemModule> file_system_module;
-	std::shared_ptr<VulkanModule> vulkan_module;
+	std::shared_ptr<WindowModule> windowModule;
+	std::shared_ptr<InputModule> inputModule;
+	std::shared_ptr<RendererModule> rendererModule;
+	std::shared_ptr<FileSystemModule> fileSystemModule;
+	std::shared_ptr<VulkanModule> vulkanModule;
 
 private:
-	std::vector<std::shared_ptr<Module>> modules_list;
+	std::vector<std::shared_ptr<Module>> modulesList;
 
-	EngineState engine_state;
+	EngineState engineState;
 
 	bool quit;
 
-	bool is_editor;
+	bool isEditor;
 
-	float delta_time;
+	float deltaTime;
 
-	Timer ms_timer;
-	Timer fps_timer;
-	int	num_fps;
-	int	last_frame_ms;
-	int	last_fps;
+	Timer msTimer;
+	Timer fpsTimer;
+	int	numFps;
+	int	lastFrameMs;
+	int	lastFps;
 	int frames;
-	int capped_ms;
+	int cappedMs;
 
-	bool to_stop;
-	bool to_pause;
+	bool toStop;
+	bool toPause;
 };
 
 extern std::unique_ptr<Application> App;

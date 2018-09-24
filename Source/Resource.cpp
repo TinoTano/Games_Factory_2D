@@ -3,6 +3,10 @@
 #include <ctime>
 #include "md5.h"
 
+Resource::Resource()
+{
+}
+
 Resource::Resource(std::string name, std::string assets_path, std::string library_path, ResourceType type) :
 	name(name), assets_path(assets_path), library_path(library_path), res_type(type), used_count(0)
 {

@@ -1,34 +1,40 @@
 #pragma once
 #include "Module.h"
-#include "ThirdParty\Vulkan_1.1.82.1\Include\vulkan\vulkan.hpp"
 #include <vector>
+#include "Application.h"
 
-struct QueueFamily
-{
-	int graphics_index = 0;
-	int present_index = 0;
-
-	bool is_valid()
-	{
-		return graphics_index > 0 && present_index > 0;
-	}
-};
-
-struct SwapChainSupportDetails
-{
-	VkSurfaceCapabilitiesKHR capabilities;
-	std::vector<VkSurfaceFormatKHR> formats;
-	std::vector<VkPresentModeKHR> present_modes;
-};
+#define GLFW_INCLUDE_VULKAN
+#include "ThirdParty/glfw-3.2.1/include/glfw3.h"
 
 class VulkanModule : public Module
 {
 public:
-	VulkanModule(const char* module_name, bool game_module = false);
+
+	struct QueueFamily
+	{
+		int graphicsIndex = 0;
+		int presentIndex = 0;
+
+		bool IsValid()
+		{
+			return graphicsIndex > 0 && presentIndex > 0;
+		}
+	};
+
+	struct SwapChainSupportDetails
+	{
+		VkSurfaceCapabilitiesKHR capabilities;
+		std::vector<VkSurfaceFormatKHR> formats;
+		std::vector<VkPresentModeKHR> presentModes;
+	};
+
+	VulkanModule(const char* moduleName, bool gameModule = false);
 	~VulkanModule();
 
 	bool Init();
 	bool CleanUp();
+
+	bool Render();
 
 private:
 
@@ -61,11 +67,17 @@ private:
 	//Check if gpu supports necessary extensions
 	bool CheckDeviceExtensionSupport(VkPhysicalDevice device);
 
+	bool CheckValidationLayerSupport();
+
+	bool CreateVertexBuffer();
+
+	bool CreateIndexBuffer();
+
 	//Return better swap chain format from available formats
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats);
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
 	//Return better swap chain presentation mode from available modes 
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> available_present_modes);
+	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 
 	//Return swap chain extent
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -76,13 +88,13 @@ private:
 
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
-	VkShaderModule CreateShaderModule(std::string& shader_code);
+	VkShaderModule CreateShaderModule(std::string& shaderCode);
 
-	bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& buffer_memory);
+	bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 
-	uint32_t FindMemoryType(uint32_t type_filter, VkMemoryPropertyFlags properties);
+	uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
-	void CopyBuffer(VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size);
+	void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
 	VkCommandBuffer BeginSingleTimeCommands();
 
@@ -90,61 +102,77 @@ private:
 
 	bool CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
-	void RecreateSwapChain(VkSwapchainKHR swap_chain);
-	void CleanupSwapChain(VkSwapchainKHR swap_chain);
+	void RecreateSwapChain(VkSwapchainKHR swapChain);
+	void CleanupSwapChain(VkSwapchainKHR swapCshain);
 
 	void PrintVkResults(VkResult result);
 
+	bool PrintVKDebugMessages(const char* msg);
+
+	static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
+		return App->vulkanModule->PrintVKDebugMessages(msg);
+	}
+
 private:
 	//The instance is the connection between your application and the Vulkan library
-	VkInstance vk_instance;
+	VkInstance vkInstance;
 
 	//Physical Device is the GPU used
-	VkPhysicalDevice vk_physical_device;
+	VkPhysicalDevice vkPhysicalDevice;
 
 	//Interface with the physical device
-	VkDevice vk_logical_device;
+	VkDevice vkLogicalDevice;
 
 	//graphics queue from logical device
-	VkQueue vk_graphics_queue;
+	VkQueue vkGraphicsQueue;
 
 	//presentation queue from logical device
-	VkQueue vk_presentation_queue;
+	VkQueue vkPresentationQueue;
 
 	//Surface where the images are rendered
-	VkSurfaceKHR vk_surface;
+	VkSurfaceKHR vkSurface;
 
-	VkAllocationCallbacks* vk_allocator;
-	VkDebugReportCallbackEXT vk_debug_report;
+	VkAllocationCallbacks* vkAllocator;
+	VkDebugReportCallbackEXT vkDebugReport;
 
 	//The swap chain is essentially a queue of images that are waiting to be presented to the screen
-	VkSwapchainKHR vk_swap_chain;
+	VkSwapchainKHR vkSwapchain;
 
 	//Format of the images in the swap chain
-	VkFormat vk_swap_chain_image_format;
+	VkFormat vkSwapchainImageFormat;
 
 	//Swap chain extent (x,y,w,h)
-	VkExtent2D vk_swap_chain_extent;
+	VkExtent2D vkSwapchainExtent;
 
 	//we need to tell Vulkan about the framebuffer attachments that will be used while rendering. 
 	//We need to specify how many color and depth buffers there will be, how many samples to use for each of them and how their contents should be handled 
 	//throughout the rendering operations. All of this information is wrapped in a render pass object
-	VkRenderPass vk_render_pass;
+	VkRenderPass vkRenderPass;
 
-	VkDescriptorSetLayout vk_descriptor_set_layout;
-	VkPipelineLayout vk_pipeline_layout;
-	VkPipeline vk_graphics_pipeline;
-	VkCommandPool vk_command_pool;
-	VkSemaphore vk_image_available_semaphore;
-	VkSemaphore vk_render_finished_semaphore;
+	VkDescriptorSetLayout vkDescriptorSetLayout;
+	VkPipelineLayout vkPipelineLayout;
+	VkPipeline vkGraphicsPipeline;
+	VkCommandPool vkCommandPool;
+	VkSemaphore vkImageAvailableSemaphore;
+	VkSemaphore vkRenderFinishedSemaphore;
 
-	bool enable_validation_layers;
+	bool enableValidationLayers;
 
-	std::vector<const char*> device_extensions;
-	std::vector<const char*> validation_layers;
-	std::vector<VkImage> swap_chain_images;
-	std::vector<VkImageView> swap_chain_image_views;
-	std::vector<VkFramebuffer> swap_chain_framebuffers;
-	std::vector<VkCommandBuffer> command_buffers;
+	std::vector<const char*> deviceExtensions;
+	std::vector<const char*> validationLayers;
+	std::vector<VkImage> swapchainImages;
+	std::vector<VkImageView> swapchainImageViews;
+	std::vector<VkFramebuffer> swapchainFramebuffers;
+	std::vector<VkCommandBuffer> commandBuffers;
+	std::vector<VkDescriptorSet> vkDescriptorSets;
+
+	VkImage depthImage;
+	VkDeviceMemory depthImageMemory;
+	VkImageView depthImageView;
+
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
 };
 

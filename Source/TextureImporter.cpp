@@ -14,7 +14,7 @@ TextureImporter::~TextureImporter()
 std::shared_ptr<Texture> TextureImporter::LoadImage(const char * path)
 {
 	std::shared_ptr<Texture> texture = std::make_shared<Texture>();
-
-	stbi_load(path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	
+	//stbi_load(path, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	return texture;
 }
