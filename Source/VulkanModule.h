@@ -16,9 +16,12 @@ public:
 		uint32_t graphicsIndex = 0;
 		uint32_t presentIndex = 0;
 
+		bool hasGraphics = false;
+		bool hasPresent = false;
+
 		bool IsValid()
 		{
-			return graphicsIndex > 0 && presentIndex > 0;
+			return hasGraphics && hasPresent;
 		}
 	};
 
@@ -91,7 +94,7 @@ private:
 
 	VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
-	VkShaderModule CreateShaderModule(std::string& shaderCode);
+	VkShaderModule CreateShaderModule(std::string shaderCode);
 
 	bool CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 

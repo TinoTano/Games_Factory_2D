@@ -31,8 +31,8 @@ Application::Application()
 	modulesList.reserve(4);
 	modulesList.emplace_back(windowModule = std::make_shared<WindowModule>("Window Module"));
 	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
-	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
 	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
+	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
 
 	fileSystemModule = std::make_shared<FileSystemModule>("File System Module");
 }

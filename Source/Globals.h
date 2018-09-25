@@ -17,6 +17,6 @@ void log(const char file[], const char function[], int line, bool is_warning, bo
 #define DATA_SHADERS_FOLDER "./Shaders/"
 
 
-#define DEFAULT_VERTEX_SHADER_PATH "Shaders/default_vert.spv"
-#define DEFAULT_FRAGMENT_SHADER_PATH "Shaders/default_frag.spv"
+#define DEFAULT_VERTEX_SHADER_PATH "Shaders/vert.spv"
+#define DEFAULT_FRAGMENT_SHADER_PATH "Shaders/frag.spv"
 #define GLSL_VALIDATOR_COMMAND "Shaders/glslangValidator.exe -V "

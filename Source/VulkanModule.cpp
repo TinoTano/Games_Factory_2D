@@ -111,14 +111,36 @@ bool VulkanModule::Init()
 
 bool VulkanModule::CleanUp()
 {
-#if _DEBUG
-	DestroyDebugUtilsMessengerEXT(vkInstance, vkDebugReport, nullptr);
-#endif
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroySemaphore(vkLogicalDevice, vkRenderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(vkLogicalDevice, vkImageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(vkLogicalDevice, vkInFlightFences[i], nullptr);
+	}
+
+	vkDestroyCommandPool(vkLogicalDevice, vkCommandPool, nullptr);
+
+	for (auto framebuffer : swapchainFramebuffers) {
+		vkDestroyFramebuffer(vkLogicalDevice, framebuffer, nullptr);
+	}
+
+	vkDestroyPipeline(vkLogicalDevice, vkGraphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(vkLogicalDevice, vkPipelineLayout, nullptr);
+	vkDestroyRenderPass(vkLogicalDevice, vkRenderPass, nullptr);
+
+	for (auto imageView : swapchainImageViews) {
+		vkDestroyImageView(vkLogicalDevice, imageView, nullptr);
+	}
+
+	vkDestroySwapchainKHR(vkLogicalDevice, vkSwapchain, nullptr);
+	vkDestroyDevice(vkLogicalDevice, nullptr);
+
+	if (enableValidationLayers) {
+		DestroyDebugUtilsMessengerEXT(vkInstance, vkDebugReport, nullptr);
+	}
 
 	vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
-
-	vkDestroyDevice(vkLogicalDevice, nullptr);
 	vkDestroyInstance(vkInstance, nullptr);
+
 	return true;
 }
 
@@ -204,7 +226,7 @@ bool VulkanModule::Render()
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	vkQueueWaitIdle(vkPresentationQueue);
+	//vkQueueWaitIdle(vkPresentationQueue);
 	return true;
 }
 
@@ -545,8 +567,8 @@ bool VulkanModule::CreateDescriptorSetLayout() {
 
 bool VulkanModule::CreateGraphicsPipeline()
 {
-	auto vertShaderCode = App->fileSystemModule->LoadBinaryTextFile(DEFAULT_VERTEX_SHADER_PATH);
-	auto fragShaderCode = App->fileSystemModule->LoadBinaryTextFile(DEFAULT_FRAGMENT_SHADER_PATH);
+	auto vertShaderCode = App->fileSystemModule->LoadBinaryTextFile("../Data/Shaders/vert.spv");
+	auto fragShaderCode = App->fileSystemModule->LoadBinaryTextFile("../Data/Shaders/frag.spv");
 
 	VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 	VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -607,21 +629,13 @@ bool VulkanModule::CreateGraphicsPipeline()
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
 	multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampling.sampleShadingEnable = VK_FALSE;
 	multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
-	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthStencil.depthTestEnable = VK_TRUE;
-	depthStencil.depthWriteEnable = VK_TRUE;
-	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
-	depthStencil.depthBoundsTestEnable = VK_FALSE;
-	depthStencil.stencilTestEnable = VK_FALSE;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -640,14 +654,11 @@ bool VulkanModule::CreateGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	//pipelineLayoutInfo.setLayoutCount = 1;
-	//pipelineLayoutInfo.pSetLayouts = &vkDescriptorSetLayout;
+	pipelineLayoutInfo.setLayoutCount = 0;
+	pipelineLayoutInfo.pushConstantRangeCount = 0;
 
-	VkResult result = vkCreatePipelineLayout(vkLogicalDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout);
-	if(result != VK_SUCCESS) {
-		CONSOLE_ERROR("failed to create pipeline layout!");
-		PrintVkResults(result);
-		return false;
+	if (vkCreatePipelineLayout(vkLogicalDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
 	VkGraphicsPipelineCreateInfo pipelineInfo = {};
@@ -659,18 +670,14 @@ bool VulkanModule::CreateGraphicsPipeline()
 	pipelineInfo.pViewportState = &viewportState;
 	pipelineInfo.pRasterizationState = &rasterizer;
 	pipelineInfo.pMultisampleState = &multisampling;
-	pipelineInfo.pDepthStencilState = &depthStencil;
 	pipelineInfo.pColorBlendState = &colorBlending;
 	pipelineInfo.layout = vkPipelineLayout;
 	pipelineInfo.renderPass = vkRenderPass;
 	pipelineInfo.subpass = 0;
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-	result = vkCreateGraphicsPipelines(vkLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline);
-	if(result != VK_SUCCESS) {
-		CONSOLE_ERROR("failed to create graphics pipeline!");
-		PrintVkResults(result);
-		return false;
+	if (vkCreateGraphicsPipelines(vkLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
 	vkDestroyShaderModule(vkLogicalDevice, fragShaderModule, nullptr);
@@ -862,10 +869,10 @@ bool VulkanModule::CreateSyncObjects()
 bool VulkanModule::CreateVertexBuffer()
 {
 	std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f, 1.0f}}
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 	};
 
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -962,20 +969,16 @@ VulkanModule::QueueFamily VulkanModule::FindQueueFamilies(VkPhysicalDevice devic
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
 		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-			int j = 0;
-			if (i == 0) j = 1;
-			else j = i;
-			ret.graphicsIndex = j;
+			ret.graphicsIndex = i;
+			ret.hasGraphics = true;
 		}
 
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vkSurface, &presentSupport);
 
 		if (queueFamily.queueCount > 0 && presentSupport) {
-			int j = 0;
-			if (i == 0) j = 1;
-			else j = i;
-			ret.presentIndex = j;
+			ret.presentIndex = i;
+			ret.hasPresent = true;
 		}
 
 		if (ret.IsValid()) {
@@ -1175,7 +1178,7 @@ VkFormat VulkanModule::FindSupportedFormat(const std::vector<VkFormat>& candidat
 	return ret;
 }
 
-VkShaderModule VulkanModule::CreateShaderModule(std::string & shaderCode)
+VkShaderModule VulkanModule::CreateShaderModule(std::string shaderCode)
 {
 	VkShaderModuleCreateInfo createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -1353,9 +1356,11 @@ bool VulkanModule::CreateImage(uint32_t width, uint32_t height, uint32_t mipmapL
 
 void VulkanModule::RecreateSwapChain(VkSwapchainKHR swapchain)
 {
-	int width, height;
-	glfwGetWindowSize(App->windowModule->engineWindow, &width, &height);
-	if (width == 0 || height == 0) return;
+	int width = 0, height = 0;
+	while (width == 0 || height == 0) {
+		glfwGetFramebufferSize(App->windowModule->engineWindow, &width, &height);
+		glfwWaitEvents();
+	}
 
 	vkDeviceWaitIdle(vkLogicalDevice);
 
