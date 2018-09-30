@@ -16,6 +16,12 @@
     <Filter Include="Importers">
       <UniqueIdentifier>{31f79f9a-76a0-4231-a9d0-36db391540ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObject">
+      <UniqueIdentifier>{e80d776b-a92d-439d-903c-fe4fe43e4a30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Components">
+      <UniqueIdentifier>{d1f7ecb5-6fe1-4f21-973b-2da9a152dfa8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp">
@@ -58,6 +64,24 @@
       <Filter>Resources</Filter>
     </ClCompile>
     <ClCompile Include="VulkanModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentTransform.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentSprite.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneModule.cpp">
       <Filter>Modules</Filter>
     </ClCompile>
   </ItemGroup>
@@ -105,5 +129,23 @@
       <Filter>Modules</Filter>
     </ClInclude>
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="GameObject.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentTransform.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentSprite.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

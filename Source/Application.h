@@ -10,6 +10,9 @@ class InputModule;
 class RendererModule;
 class FileSystemModule;
 class VulkanModule;
+class Timer;
+class SceneModule;
+class CameraModule;
 
 class Application
 {
@@ -54,6 +57,8 @@ public:
 	std::shared_ptr<RendererModule> rendererModule;
 	std::shared_ptr<FileSystemModule> fileSystemModule;
 	std::shared_ptr<VulkanModule> vulkanModule;
+	std::shared_ptr<SceneModule> sceneModule;
+	std::shared_ptr<CameraModule> cameraModule;
 
 private:
 	std::vector<std::shared_ptr<Module>> modulesList;

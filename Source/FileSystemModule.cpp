@@ -41,6 +41,11 @@ void FileSystemModule::SaveFileTo(const char * final_path)
 		fs::copy(old_path, new_path, fs::copy_options::update_existing);*/
 }
 
+bool FileSystemModule::FileExist(const char * filePath)
+{
+	return fs::exists(filePath);
+}
+
 std::string FileSystemModule::GetFullPath(std::string fileName)
 {
 	fs::path full_path = fs::system_complete(fileName);

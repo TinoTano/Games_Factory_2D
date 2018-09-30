@@ -1,12 +1,15 @@
 #pragma once
 
 #include "ThirdParty/Vulkan_1.1.82.1/Include/vulkan/vulkan.h"
+#include "ThirdParty/glm/vec2.hpp"
+#include "ThirdParty/glm/vec4.hpp"
 #include <array>
 
 struct Vertex
 {
-	float pos[2];
-	float color[3];
+	glm::vec2 pos;
+	glm::vec4 color;
+	glm::vec4 currentPos;
 
 	static VkVertexInputBindingDescription bindingDescription()
 	{
@@ -29,7 +32,7 @@ struct Vertex
 
 		attributeDescriptions[1].binding = 0;
 		attributeDescriptions[1].location = 1;
-		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[1].format = VK_FORMAT_R32G32B32A32_SFLOAT;
 		attributeDescriptions[1].offset = offsetof(Vertex, color);
 
 		return attributeDescriptions;

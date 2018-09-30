@@ -7,6 +7,9 @@
 #include <array>
 #include "FileSystemModule.h"
 #include "Vertex.h"
+#include "ComponentSprite.h"
+#include "SceneModule.h"
+#include "GameObject.h"
 
 std::vector<uint16_t> indices = {
 0, 1, 2, 2, 3, 0
@@ -74,7 +77,7 @@ VulkanModule::VulkanModule(const char* module_name, bool game_module) : Module(m
 	vkLogicalDevice = VK_NULL_HANDLE;
 	vkGraphicsQueue = VK_NULL_HANDLE;
 	vkPresentationQueue = VK_NULL_HANDLE;
-	vkDebugReport = VK_NULL_HANDLE;
+	callback = VK_NULL_HANDLE;
 	vkSurface = VK_NULL_HANDLE;
 	vkSwapchain = VK_NULL_HANDLE;
 	vkPipelineLayout = VK_NULL_HANDLE;
@@ -111,6 +114,8 @@ bool VulkanModule::Init()
 
 bool VulkanModule::CleanUp()
 {
+	CleanupSwapChain(vkSwapchain);
+
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(vkLogicalDevice, vkRenderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(vkLogicalDevice, vkImageAvailableSemaphores[i], nullptr);
@@ -119,23 +124,10 @@ bool VulkanModule::CleanUp()
 
 	vkDestroyCommandPool(vkLogicalDevice, vkCommandPool, nullptr);
 
-	for (auto framebuffer : swapchainFramebuffers) {
-		vkDestroyFramebuffer(vkLogicalDevice, framebuffer, nullptr);
-	}
-
-	vkDestroyPipeline(vkLogicalDevice, vkGraphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(vkLogicalDevice, vkPipelineLayout, nullptr);
-	vkDestroyRenderPass(vkLogicalDevice, vkRenderPass, nullptr);
-
-	for (auto imageView : swapchainImageViews) {
-		vkDestroyImageView(vkLogicalDevice, imageView, nullptr);
-	}
-
-	vkDestroySwapchainKHR(vkLogicalDevice, vkSwapchain, nullptr);
 	vkDestroyDevice(vkLogicalDevice, nullptr);
 
 	if (enableValidationLayers) {
-		DestroyDebugUtilsMessengerEXT(vkInstance, vkDebugReport, nullptr);
+		DestroyDebugUtilsMessengerEXT(vkInstance, callback, nullptr);
 	}
 
 	vkDestroySurfaceKHR(vkInstance, vkSurface, nullptr);
@@ -226,6 +218,9 @@ bool VulkanModule::Render()
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
+	CreateVertexBuffer();
+	CreateCommandBuffers();
+
 	//vkQueueWaitIdle(vkPresentationQueue);
 	return true;
 }
@@ -290,7 +285,7 @@ bool VulkanModule::SetupDebugDrawCall()
 		createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 		createInfo.pfnUserCallback = DebugCallback;
 
-		VkResult result = CreateDebugUtilsMessengerEXT(vkInstance, &createInfo, nullptr, &vkDebugReport);
+		VkResult result = CreateDebugUtilsMessengerEXT(vkInstance, &createInfo, nullptr, &callback);
 		if (result != VK_SUCCESS)
 		{
 			PrintVkResults(result);
@@ -345,7 +340,7 @@ bool VulkanModule::CreateLogicalDevice()
 	QueueFamily family = FindQueueFamilies(vkPhysicalDevice);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = { family.graphicsIndex, family.presentIndex };
+	std::set<uint32_t> uniqueQueueFamilies = { family.graphicsIndex.value(), family.presentIndex.value() };
 
 	float queuePriority = 1.0f;
 	for (uint32_t queueFamily : uniqueQueueFamilies) {
@@ -383,8 +378,8 @@ bool VulkanModule::CreateLogicalDevice()
 		return false;
 	}
 
-	vkGetDeviceQueue(vkLogicalDevice, family.graphicsIndex, 0, &vkGraphicsQueue);
-	vkGetDeviceQueue(vkLogicalDevice, family.presentIndex, 0, &vkPresentationQueue);
+	vkGetDeviceQueue(vkLogicalDevice, family.graphicsIndex.value(), 0, &vkGraphicsQueue);
+	vkGetDeviceQueue(vkLogicalDevice, family.presentIndex.value(), 0, &vkPresentationQueue);
 
 	return true;
 }
@@ -413,7 +408,7 @@ bool VulkanModule::CreateSwapChain()
 	swapchainKHRCreateInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	QueueFamily indices = FindQueueFamilies(vkPhysicalDevice);
-	uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsIndex, (uint32_t)indices.presentIndex};
+	uint32_t queueFamilyIndices[] = { (uint32_t)indices.graphicsIndex.value(), (uint32_t)indices.presentIndex.value() };
 
 	if (indices.graphicsIndex != indices.presentIndex) {
 		swapchainKHRCreateInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -567,8 +562,8 @@ bool VulkanModule::CreateDescriptorSetLayout() {
 
 bool VulkanModule::CreateGraphicsPipeline()
 {
-	auto vertShaderCode = App->fileSystemModule->LoadBinaryTextFile("../Data/Shaders/vert.spv");
-	auto fragShaderCode = App->fileSystemModule->LoadBinaryTextFile("../Data/Shaders/frag.spv");
+	auto vertShaderCode = App->fileSystemModule->LoadBinaryTextFile(DEFAULT_VERTEX_SHADER_PATH);
+	auto fragShaderCode = App->fileSystemModule->LoadBinaryTextFile(DEFAULT_FRAGMENT_SHADER_PATH);
 
 	VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 	VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -719,7 +714,7 @@ bool VulkanModule::CreateCommandPool()
 
 	VkCommandPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsIndex;
+	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsIndex.value();
 
 	if (vkCreateCommandPool(vkLogicalDevice, &poolInfo, nullptr, &vkCommandPool) != VK_SUCCESS) {
 		CONSOLE_ERROR("failed to create graphics command pool!");
@@ -868,12 +863,17 @@ bool VulkanModule::CreateSyncObjects()
 
 bool VulkanModule::CreateVertexBuffer()
 {
-	std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-	{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
-	};
+	/*std::vector<Vertex> vertices = {
+	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f, 1.0f}},
+	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f, 1.0f}},
+	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f, 1.0f}},
+	{{-0.6f, 0.4f}, {1.0f, 1.0f, 1.0f, 1.0f}}
+	};*/
+
+	/*ComponentSprite sprite;*/
+
+	std::array<Vertex, 4> vertices = App->sceneModule->sceneGameObjects[0]->GetSprite()->GetVertices();
+
 
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -969,16 +969,14 @@ VulkanModule::QueueFamily VulkanModule::FindQueueFamilies(VkPhysicalDevice devic
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
 		if (queueFamily.queueCount > 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-			ret.graphicsIndex = i;
-			ret.hasGraphics = true;
+			ret.graphicsIndex = static_cast<uint32_t>(i);
 		}
 
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, vkSurface, &presentSupport);
 
 		if (queueFamily.queueCount > 0 && presentSupport) {
-			ret.presentIndex = i;
-			ret.hasPresent = true;
+			ret.presentIndex = static_cast<uint32_t>(i);
 		}
 
 		if (ret.IsValid()) {
@@ -1377,10 +1375,6 @@ void VulkanModule::RecreateSwapChain(VkSwapchainKHR swapchain)
 
 void VulkanModule::CleanupSwapChain(VkSwapchainKHR swapchain)
 {
-	vkDestroyImageView(vkLogicalDevice, depthImageView, nullptr);
-	vkDestroyImage(vkLogicalDevice, depthImage, nullptr);
-	vkFreeMemory(vkLogicalDevice, depthImageMemory, nullptr);
-
 	for (auto framebuffer : swapchainFramebuffers) {
 		vkDestroyFramebuffer(vkLogicalDevice, framebuffer, nullptr);
 	}

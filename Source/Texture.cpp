@@ -1,16 +1,30 @@
 #include "Texture.h"
+#include "ThirdParty/gli/gli.hpp"
+#include "Application.h"
+#include "FileSystemModule.h"
 
 Texture::Texture()
 {
 }
 
-Texture::Texture(uint32_t width, uint32_t height, uint8_t* texture_data, std::string name, std::string assets_path, std::string library_path, ResourceType type) :
-	width(width), height(height), texture_data(texture_data), Resource(name, assets_path, library_path, type)
+Texture::~Texture()
 {
 }
 
-Texture::~Texture()
+bool Texture::LoadFromFile(const char * filePath)
 {
+	bool ret = false;
+
+	if (App->fileSystemModule->FileExist(filePath))
+	{
+		gli::texture2d texture(gli::load(filePath));
+		width = texture.extent().x;
+		height = texture.extent().y;
+		mipmapLevels = texture.levels();
+		ret = true;
+	}
+
+	return ret;
 }
 
 uint32_t Texture::GetWidth() const
@@ -25,5 +39,5 @@ uint32_t Texture::GetHeight() const
 
 uint8_t * Texture::GetData() const
 {
-	return texture_data;
+	return textureData;
 }

@@ -69,7 +69,12 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(ProjectDir)/ThirdParty;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(ProjectDir)/ThirdParty;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -77,8 +82,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>
-      </LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)Source\ThirdParty\Vulkan_1.1.82.1\Lib32;$(SolutionDir)Source\ThirdParty\glfw-3.2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -108,6 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -136,7 +141,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="CameraModule.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComponentSprite.cpp" />
+    <ClCompile Include="ComponentTransform.cpp" />
     <ClCompile Include="FileSystemModule.cpp" />
+    <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="InputModule.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -144,6 +154,7 @@
     <ClCompile Include="RendererModule.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceManagerModule.cpp" />
+    <ClCompile Include="SceneModule.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureImporter.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -152,7 +163,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="CameraModule.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentSprite.h" />
+    <ClInclude Include="ComponentTransform.h" />
     <ClInclude Include="FileSystemModule.h" />
+    <ClInclude Include="GameObject.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="InputModule.h" />
     <ClInclude Include="md5.h" />
@@ -160,6 +176,7 @@
     <ClInclude Include="RendererModule.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceManagerModule.h" />
+    <ClInclude Include="SceneModule.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureImporter.h" />
     <ClInclude Include="Timer.h" />

@@ -1,7 +1,7 @@
 #pragma once
 #include "Module.h"
 #include <vector>
-//#include <experimental/optional>
+#include <optional>
 #include "Application.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -13,15 +13,12 @@ public:
 
 	struct QueueFamily
 	{
-		uint32_t graphicsIndex = 0;
-		uint32_t presentIndex = 0;
-
-		bool hasGraphics = false;
-		bool hasPresent = false;
+		std::optional<uint32_t> graphicsIndex;
+		std::optional<uint32_t> presentIndex;
 
 		bool IsValid()
 		{
-			return hasGraphics && hasPresent;
+			return graphicsIndex.has_value() && presentIndex.has_value();
 		}
 	};
 
@@ -132,7 +129,7 @@ private:
 	//Surface where the images are rendered
 	VkSurfaceKHR vkSurface;
 
-	VkDebugReportCallbackEXT vkDebugReport;
+	VkDebugUtilsMessengerEXT callback;
 
 	//The swap chain is essentially a queue of images that are waiting to be presented to the screen
 	VkSwapchainKHR vkSwapchain;

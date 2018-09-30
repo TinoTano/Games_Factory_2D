@@ -1,5 +1,4 @@
 #include "WindowModule.h"
-
 #include "ThirdParty/glfw-3.2.1/include/glfw3.h"
 
 

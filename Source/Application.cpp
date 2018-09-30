@@ -1,5 +1,5 @@
 #include "Application.h"
-#include "Timer.h"
+//#include "Timer.h"
 #include "Module.h"
 #include "WindowModule.h"
 #include "InputModule.h"
@@ -7,6 +7,8 @@
 #include "Globals.h"
 #include "FileSystemModule.h"
 #include "VulkanModule.h"
+#include "SceneModule.h"
+#include "CameraModule.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -28,9 +30,11 @@ Application::Application()
 
 	engineState = EngineState::OnStop;
 
-	modulesList.reserve(4);
+	modulesList.reserve(6);
 	modulesList.emplace_back(windowModule = std::make_shared<WindowModule>("Window Module"));
 	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
+	modulesList.emplace_back(cameraModule = std::make_shared<CameraModule>("Camera Module"));
+	modulesList.emplace_back(sceneModule = std::make_shared<SceneModule>("Scene Module"));
 	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
 	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
 
@@ -167,6 +171,8 @@ bool Application::PostUpdate()
 	}
 
 	lastFrameMs = msTimer.ReadAsMS();
+
+	//CONSOLE_DEBUG("FPS: %d", lastFps);
 
 	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{

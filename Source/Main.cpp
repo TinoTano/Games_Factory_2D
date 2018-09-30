@@ -1,4 +1,5 @@
 #include "Application.h"
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
 std::unique_ptr<Application> App = nullptr;
@@ -10,7 +11,6 @@ int CALLBACK WinMain(
 	_In_ int       nCmdShow
 )
 {
-
 	App = std::make_unique<Application>();
 
 	if (App != nullptr) {
