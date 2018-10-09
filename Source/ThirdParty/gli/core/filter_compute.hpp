@@ -2,7 +2,7 @@
 
 #include "filter.hpp"
 #include "coord.hpp"
-#include <glm/gtc/integer.hpp>
+#include <gtc/integer.hpp>
 
 namespace gli{
 namespace detail

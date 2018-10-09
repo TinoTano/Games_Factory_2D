@@ -1,2 +1,2 @@
-glslangValidator.exe -V DefaultVertexSahder.vert DefaultFragmentShader.frag
+glslangValidator.exe -V Vertex.vert Fragment.frag
 set /p DUMMY=Hit ENTER to continue...

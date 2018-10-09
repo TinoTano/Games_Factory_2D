@@ -10,8 +10,12 @@
 #include "SceneModule.h"
 #include "CameraModule.h"
 
+#ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#else
+#include <thread>
+#endif
 
 Application::Application()
 {
@@ -172,7 +176,7 @@ bool Application::PostUpdate()
 
 	lastFrameMs = msTimer.ReadAsMS();
 
-	//CONSOLE_DEBUG("FPS: %d", lastFps);
+	CONSOLE_DEBUG("FPS: %d", lastFps);
 
 	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/simd/platform.h>
+#include <simd/platform.h>
 
 namespace gli{
 namespace detail

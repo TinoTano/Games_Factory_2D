@@ -1,15 +1,14 @@
 #pragma once
 
-#include "ThirdParty/Vulkan_1.1.82.1/Include/vulkan/vulkan.h"
-#include "ThirdParty/glm/vec2.hpp"
-#include "ThirdParty/glm/vec4.hpp"
+#include <vulkan/vulkan.h>
+#include <vec2.hpp>
+#include <vec4.hpp>
 #include <array>
 
 struct Vertex
 {
 	glm::vec2 pos;
 	glm::vec4 color;
-	glm::vec4 currentPos;
 
 	static VkVertexInputBindingDescription bindingDescription()
 	{

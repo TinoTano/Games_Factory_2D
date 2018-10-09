@@ -1,5 +1,5 @@
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/wrap.hpp>
+#include <gtx/wrap.hpp>
 
 namespace gli{
 namespace detail

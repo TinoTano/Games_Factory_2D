@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Component.h"
-#include "ThirdParty/glm/vec2.hpp"
+#include <vec2.hpp>
+#include <gtc/matrix_transform.hpp>
 
 class ComponentTransform :
 	public Component
@@ -22,6 +23,8 @@ public:
 	float GetGlobalPositionY() const;
 
 	void SetRotation(float angle);
+	void IncreaseRotation(float angle);
+
 	float GetLocalRotation() const;
 	float GetGlobalRotation() const;
 
@@ -36,6 +39,8 @@ public:
 	float GetGlobalScaleX() const;
 	float GetGlobalScaleY() const;
 
+	glm::mat4 GetModelMatrix() const;
+
 private:
 	glm::vec2 localPosition;
 	float localRotation;
@@ -44,5 +49,10 @@ private:
 	glm::vec2 globalPosition;
 	float globalRotation;
 	glm::vec2 globalScale;
+
+	glm::mat4 modelMatrix;
+	glm::vec2 prevPos;
+	float prevRot;
+	glm::vec2 prevScale;
 };
 

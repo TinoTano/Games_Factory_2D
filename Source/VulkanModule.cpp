@@ -10,9 +10,16 @@
 #include "ComponentSprite.h"
 #include "SceneModule.h"
 #include "GameObject.h"
+#include "CameraModule.h"
 
 std::vector<uint16_t> indices = {
-0, 1, 2, 2, 3, 0
+	0, 1, 2, 2, 3, 0
+};
+
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
 };
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -36,7 +43,7 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
 	// Select prefix depending on flags passed to the callback
-		// Note that multiple flags may be set for a single validation message
+	// Note that multiple flags may be set for a single validation message
 	std::string prefix("");
 
 	// Error that may result in undefined behaviour
@@ -60,7 +67,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityF
 		prefix += "INFO: ";
 	}
 	// Diagnostic info from the Vulkan loader and layers
-	// Usually not helpful in terms of API usage, but may help to debug layer and loader problems 
+	// Usually not helpful in terms of API usage, but may help to debug layer and loader problems
 	if (pCallbackData->flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
 	{
 		prefix += "DEBUG: ";
@@ -81,6 +88,7 @@ VulkanModule::VulkanModule(const char* module_name, bool game_module) : Module(m
 	vkSurface = VK_NULL_HANDLE;
 	vkSwapchain = VK_NULL_HANDLE;
 	vkPipelineLayout = VK_NULL_HANDLE;
+	vkGraphicsPipeline = VK_NULL_HANDLE;
 
 #ifdef NDEBUG
 	enableValidationLayers = false;
@@ -100,7 +108,8 @@ bool VulkanModule::Init()
 {
 	if (!glfwVulkanSupported())
 	{
-		CONSOLE_ERROR("Vulkan not supported!");
+		const char* s = "Vulkan not supported!";
+		CONSOLE_ERROR("%s", s);
 		return false;
 	}
 
@@ -114,7 +123,24 @@ bool VulkanModule::Init()
 
 bool VulkanModule::CleanUp()
 {
+	vkDeviceWaitIdle(vkLogicalDevice);
+
 	CleanupSwapChain(vkSwapchain);
+
+	vkDestroyDescriptorPool(vkLogicalDevice, vkDescriptorPool, nullptr);
+
+	vkDestroyDescriptorSetLayout(vkLogicalDevice, vkDescriptorSetLayout, nullptr);
+
+	for (size_t i = 0; i < swapchainImages.size(); i++) {
+		vkDestroyBuffer(vkLogicalDevice, uniformBuffers[i], nullptr);
+		vkFreeMemory(vkLogicalDevice, uniformBuffersMemory[i], nullptr);
+	}
+
+	vkDestroyBuffer(vkLogicalDevice, indexBuffer, nullptr);
+	vkFreeMemory(vkLogicalDevice, indexBufferMemory, nullptr);
+
+	vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
+	vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(vkLogicalDevice, vkRenderFinishedSemaphores[i], nullptr);
@@ -152,6 +178,9 @@ bool VulkanModule::InitVulkan()
 	if (!CreateCommandPool()) return false;
 	if (!CreateVertexBuffer()) return false;
 	if (!CreateIndexBuffer()) return false;
+	if (!CreateUniformBuffer()) return false;
+	if (!CreateDescriptorPool()) return false;
+	if (!CreateDescriptorSets()) return false;
 	if (!CreateCommandBuffers()) return false;
 	if (!CreateSyncObjects()) return false;
 
@@ -170,9 +199,18 @@ bool VulkanModule::Render()
 		return true;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-		CONSOLE_ERROR("failed to acquire swap chain image!");
+		CONSOLE_LOG("failed to acquire swap chain image!", NULL);
 		return true;
 	}
+
+	vkResetCommandPool(vkLogicalDevice, vkCommandPool, 0);
+
+	vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
+	vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
+	CreateVertexBuffer();
+	CreateCommandBuffers(imageIndex);
+
+	//UpdateUniformBuffer(imageIndex);
 
 	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -192,7 +230,7 @@ bool VulkanModule::Render()
 	vkResetFences(vkLogicalDevice, 1, &vkInFlightFences[currentFrame]);
 
 	if (vkQueueSubmit(vkGraphicsQueue, 1, &submitInfo, vkInFlightFences[currentFrame]) != VK_SUCCESS) {
-		CONSOLE_ERROR("failed to submit draw command buffer!");
+		CONSOLE_ERROR("failed to submit draw command buffer!", NULL);
 		return true;
 	}
 
@@ -213,16 +251,28 @@ bool VulkanModule::Render()
 		RecreateSwapChain(vkSwapchain);
 	}
 	else if (result != VK_SUCCESS) {
-		CONSOLE_ERROR("failed to present swap chain image!");
+		CONSOLE_ERROR("failed to present swap chain image!", NULL);
 		return true;
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
-	CreateVertexBuffer();
-	CreateCommandBuffers();
+	vkQueueWaitIdle(vkPresentationQueue);
 
-	//vkQueueWaitIdle(vkPresentationQueue);
 	return true;
+}
+
+void VulkanModule::UpdateUniformBuffer(uint32_t imageIndex)
+{
+	UniformBufferObject ubo = {};
+
+	ubo.view = App->cameraModule->GetViewMatrix();
+	ubo.proj = App->cameraModule->GetOrthoProjection();
+	ubo.model = App->sceneModule->sceneGameObjects[0]->GetModelMatrix();
+
+	void* data;
+	vkMapMemory(vkLogicalDevice, uniformBuffersMemory[imageIndex], 0, sizeof(ubo), 0, &data);
+	memcpy(data, &ubo, sizeof(ubo));
+	vkUnmapMemory(vkLogicalDevice, uniformBuffersMemory[imageIndex]);
 }
 
 bool VulkanModule::CreateVulkanInstance()
@@ -313,7 +363,7 @@ bool VulkanModule::PickPhysicalDevice()
 	vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
 
 	if (deviceCount == 0) {
-		CONSOLE_ERROR("failed to find GPUs with Vulkan support!");
+		CONSOLE_ERROR("failed to find GPUs with Vulkan support!", NULL);
 		return false;
 	}
 
@@ -328,7 +378,7 @@ bool VulkanModule::PickPhysicalDevice()
 	}
 
 	if (vkPhysicalDevice == VK_NULL_HANDLE) {
-		CONSOLE_ERROR("failed to find a suitable GPU!");
+		CONSOLE_ERROR("failed to find a suitable GPU!", NULL);
 		return false;
 	}
 
@@ -427,7 +477,7 @@ bool VulkanModule::CreateSwapChain()
 	VkResult result = vkCreateSwapchainKHR(vkLogicalDevice, &swapchainKHRCreateInfo, nullptr, &vkSwapchain);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create swap chain!");
+		CONSOLE_ERROR("failed to create swap chain!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -435,7 +485,7 @@ bool VulkanModule::CreateSwapChain()
 	result = vkGetSwapchainImagesKHR(vkLogicalDevice, vkSwapchain, &imageCount, nullptr);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to get swap chain images HKR!");
+		CONSOLE_ERROR("failed to get swap chain images HKR!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -443,7 +493,7 @@ bool VulkanModule::CreateSwapChain()
 	result = vkGetSwapchainImagesKHR(vkLogicalDevice, vkSwapchain, &imageCount, swapchainImages.data());
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to get swap chain images HKR!");
+		CONSOLE_ERROR("failed to get swap chain images HKR!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -520,7 +570,7 @@ bool VulkanModule::CreateRenderPass()
 	VkResult result = vkCreateRenderPass(vkLogicalDevice, &renderPassInfo, nullptr, &vkRenderPass);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create render pass!");
+		CONSOLE_ERROR("failed to create render pass!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -536,23 +586,25 @@ bool VulkanModule::CreateDescriptorSetLayout() {
 	uboLayoutBinding.pImmutableSamplers = nullptr;
 	uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
-	VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
+	/*VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
 	samplerLayoutBinding.binding = 1;
 	samplerLayoutBinding.descriptorCount = 1;
 	samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	samplerLayoutBinding.pImmutableSamplers = nullptr;
-	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;*/
 
-	std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+	//std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
 	VkDescriptorSetLayoutCreateInfo layoutInfo = {};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-	layoutInfo.pBindings = bindings.data();
+	//layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+	//layoutInfo.pBindings = bindings.data();
+	layoutInfo.bindingCount = 1;
+	layoutInfo.pBindings = &uboLayoutBinding;
 
 	VkResult result = vkCreateDescriptorSetLayout(vkLogicalDevice, &layoutInfo, nullptr, &vkDescriptorSetLayout);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create descriptor layout!");
+		CONSOLE_ERROR("failed to create descriptor layout!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -562,8 +614,8 @@ bool VulkanModule::CreateDescriptorSetLayout() {
 
 bool VulkanModule::CreateGraphicsPipeline()
 {
-	auto vertShaderCode = App->fileSystemModule->LoadBinaryTextFile(DEFAULT_VERTEX_SHADER_PATH);
-	auto fragShaderCode = App->fileSystemModule->LoadBinaryTextFile(DEFAULT_FRAGMENT_SHADER_PATH);
+	auto vertShaderCode = App->fileSystemModule->LoadBinaryTextFile("Data/Shaders/vert.spv");
+	auto fragShaderCode = App->fileSystemModule->LoadBinaryTextFile("Data/Shaders/frag.spv");
 
 	VkShaderModule vertShaderModule = CreateShaderModule(vertShaderCode);
 	VkShaderModule fragShaderModule = CreateShaderModule(fragShaderCode);
@@ -624,7 +676,7 @@ bool VulkanModule::CreateGraphicsPipeline()
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-	rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	rasterizer.depthBiasEnable = VK_FALSE;
 
 	VkPipelineMultisampleStateCreateInfo multisampling = {};
@@ -647,10 +699,17 @@ bool VulkanModule::CreateGraphicsPipeline()
 	colorBlending.blendConstants[2] = 0.0f;
 	colorBlending.blendConstants[3] = 0.0f;
 
+	VkPushConstantRange pushConstantRange{};
+	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	pushConstantRange.offset = 0;
+	pushConstantRange.size = sizeof(UniformBufferObject);
+
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo.setLayoutCount = 0;
-	pipelineLayoutInfo.pushConstantRangeCount = 0;
+	pipelineLayoutInfo.setLayoutCount = 1;
+	pipelineLayoutInfo.pSetLayouts = &vkDescriptorSetLayout;
+	pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+	pipelineLayoutInfo.pushConstantRangeCount = 1;
 
 	if (vkCreatePipelineLayout(vkLogicalDevice, &pipelineLayoutInfo, nullptr, &vkPipelineLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create pipeline layout!");
@@ -672,7 +731,8 @@ bool VulkanModule::CreateGraphicsPipeline()
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
 	if (vkCreateGraphicsPipelines(vkLogicalDevice, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &vkGraphicsPipeline) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create graphics pipeline!");
+		CONSOLE_ERROR("failed to create Pipeline!", NULL);
+		return false;
 	}
 
 	vkDestroyShaderModule(vkLogicalDevice, fragShaderModule, nullptr);
@@ -700,7 +760,7 @@ bool VulkanModule::CreateFramebuffers()
 		framebufferInfo.layers = 1;
 
 		if (vkCreateFramebuffer(vkLogicalDevice, &framebufferInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {
-			CONSOLE_ERROR("failed to create framebuffer!");
+			CONSOLE_ERROR("failed to create framebuffer!", NULL);
 			return false;
 		}
 	}
@@ -715,9 +775,10 @@ bool VulkanModule::CreateCommandPool()
 	VkCommandPoolCreateInfo poolInfo = {};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsIndex.value();
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 	if (vkCreateCommandPool(vkLogicalDevice, &poolInfo, nullptr, &vkCommandPool) != VK_SUCCESS) {
-		CONSOLE_ERROR("failed to create graphics command pool!");
+		CONSOLE_ERROR("failed to create graphics command pool!", NULL);
 		return false;
 	}
 
@@ -728,16 +789,17 @@ bool VulkanModule::CreateDepthResources()
 {
 	/*VkFormat depthFormat = FindDepthFormat();
 
-	CreateImage(vkSwapchainExtent.width, vkSwapchainExtent.height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
-	depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);*/
+	 CreateImage(vkSwapchainExtent.width, vkSwapchainExtent.height, 1, depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, depthImage, depthImageMemory);
+	 depthImageView = CreateImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);*/
 
-	//transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+	 //transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 
 	return true;
 }
 
-bool VulkanModule::CreateCommandBuffers()
+bool VulkanModule::CreateCommandBuffers(uint32_t imageIndex)
 {
+	vkFreeCommandBuffers(vkLogicalDevice, vkCommandPool, commandBuffers.size(), commandBuffers.data());
 	commandBuffers.resize(swapchainFramebuffers.size());
 
 	VkCommandBufferAllocateInfo allocInfo = {};
@@ -749,7 +811,7 @@ bool VulkanModule::CreateCommandBuffers()
 	VkResult result = vkAllocateCommandBuffers(vkLogicalDevice, &allocInfo, commandBuffers.data());
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to allocate command buffers!");
+		CONSOLE_ERROR("failed to allocate command buffers!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -762,7 +824,7 @@ bool VulkanModule::CreateCommandBuffers()
 		VkResult result = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
 		if (result != VK_SUCCESS)
 		{
-			CONSOLE_ERROR("failed to begin recording command buffer!");
+			CONSOLE_ERROR("failed to begin recording command buffer!", NULL);
 			PrintVkResults(result);
 			return false;
 		}
@@ -775,11 +837,11 @@ bool VulkanModule::CreateCommandBuffers()
 		renderPassInfo.renderArea.extent = vkSwapchainExtent;
 
 		/*std::array<VkClearValue, 1> clearValues = {};
-		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-		clearValues[1].depthStencil = { 1.0f, 0 };*/
+		 clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		 clearValues[1].depthStencil = { 1.0f, 0 };*/
 
-		/*renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();*/
+		 /*renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		  renderPassInfo.pClearValues = clearValues.data();*/
 
 		VkClearValue clearValues;
 		clearValues.color = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -793,20 +855,43 @@ bool VulkanModule::CreateCommandBuffers()
 
 		VkBuffer vertexBuffers[] = { vertexBuffer };
 		VkDeviceSize offsets[] = { 0 };
+
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
 		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-		//vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &vkDescriptorSets[i], 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
 
-		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+		//std::vector<GameObject*> sceneGameObjects = App->sceneModule->sceneGameObject;
+		int vertexOffset = 0;
+		int count = App->sceneModule->sceneGameObjects.size();
+		for (int j = 0; j < count; j++)
+		{
+			UniformBufferObject ubo = {};
+
+			ubo.view = App->cameraModule->GetViewMatrix();
+			ubo.proj = App->cameraModule->GetOrthoProjection();
+			ubo.model = App->sceneModule->sceneGameObjects[j]->GetModelMatrix();
+
+			vkCmdPushConstants(
+				commandBuffers[i],
+				vkPipelineLayout,
+				VK_SHADER_STAGE_VERTEX_BIT,
+				0,
+				sizeof(UniformBufferObject),
+				&ubo
+			);
+
+			vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, vertexOffset, 0);
+			vertexOffset += 4;
+		}
 
 		vkCmdEndRenderPass(commandBuffers[i]);
 
 		result = vkEndCommandBuffer(commandBuffers[i]);
 		if (result != VK_SUCCESS)
 		{
-			CONSOLE_ERROR("failed to record command buffer!");
+			CONSOLE_ERROR("failed to record command buffer!", NULL);
 			PrintVkResults(result);
 			return false;
 		}
@@ -832,7 +917,7 @@ bool VulkanModule::CreateSyncObjects()
 		VkResult result = vkCreateSemaphore(vkLogicalDevice, &semaphoreInfo, nullptr, &vkImageAvailableSemaphores[i]);
 		if (result != VK_SUCCESS)
 		{
-			CONSOLE_ERROR("failed to create Image available semaphore!");
+			CONSOLE_ERROR("failed to create Image available semaphore!", NULL);
 			PrintVkResults(result);
 			return false;
 		}
@@ -841,7 +926,7 @@ bool VulkanModule::CreateSyncObjects()
 			result = vkCreateSemaphore(vkLogicalDevice, &semaphoreInfo, nullptr, &vkRenderFinishedSemaphores[i]);
 			if (result != VK_SUCCESS)
 			{
-				CONSOLE_ERROR("failed to create render available semaphore!");
+				CONSOLE_ERROR("failed to create render available semaphore!", NULL);
 				PrintVkResults(result);
 				return false;
 			}
@@ -850,7 +935,7 @@ bool VulkanModule::CreateSyncObjects()
 				result = vkCreateFence(vkLogicalDevice, &fenceInfo, nullptr, &vkInFlightFences[i]);
 				if (result != VK_SUCCESS)
 				{
-					CONSOLE_ERROR("failed to create in flight fences!");
+					CONSOLE_ERROR("failed to create in flight fences!", NULL);
 					PrintVkResults(result);
 					return false;
 				}
@@ -863,17 +948,17 @@ bool VulkanModule::CreateSyncObjects()
 
 bool VulkanModule::CreateVertexBuffer()
 {
-	/*std::vector<Vertex> vertices = {
-	{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f, 1.0f}},
-	{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f, 1.0f}},
-	{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f, 1.0f}},
-	{{-0.6f, 0.4f}, {1.0f, 1.0f, 1.0f, 1.0f}}
-	};*/
-
-	/*ComponentSprite sprite;*/
-
-	std::array<Vertex, 4> vertices = App->sceneModule->sceneGameObjects[0]->GetSprite()->GetVertices();
-
+	std::vector<Vertex> vertices;
+	std::vector<GameObject*> gos = App->sceneModule->sceneGameObjects;
+	for (GameObject* go : gos)
+	{
+		std::array<Vertex, 4> goVertices = go->GetSprite()->GetVertices();
+		for (Vertex v : goVertices)
+		{
+			vertices.emplace_back(v);
+		}
+	}
+	//std::array<Vertex, 4> vertices = App->sceneModule->sceneGameObjects[0]->GetSprite()->GetVertices();
 
 	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
@@ -881,7 +966,7 @@ bool VulkanModule::CreateVertexBuffer()
 	VkDeviceMemory stagingBufferMemory;
 	if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory))
 	{
-		CONSOLE_ERROR("failed to create vertex staging buffer");
+		CONSOLE_ERROR("failed to create vertex staging buffer", NULL);
 		return false;
 	}
 
@@ -892,7 +977,7 @@ bool VulkanModule::CreateVertexBuffer()
 
 	if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory))
 	{
-		CONSOLE_ERROR("failed to create vertex buffer");
+		CONSOLE_ERROR("failed to create vertex buffer", NULL);
 		return false;
 	}
 
@@ -912,7 +997,7 @@ bool VulkanModule::CreateIndexBuffer()
 	VkDeviceMemory stagingBufferMemory;
 	if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory))
 	{
-		CONSOLE_ERROR("failed to create index staging buffer");
+		CONSOLE_ERROR("failed to create index staging buffer", NULL);
 		return false;
 	}
 
@@ -923,7 +1008,7 @@ bool VulkanModule::CreateIndexBuffer()
 
 	if (!CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory))
 	{
-		CONSOLE_ERROR("failed to create index buffer");
+		CONSOLE_ERROR("failed to create index buffer", NULL);
 		return false;
 	}
 
@@ -931,6 +1016,82 @@ bool VulkanModule::CreateIndexBuffer()
 
 	vkDestroyBuffer(vkLogicalDevice, stagingBuffer, nullptr);
 	vkFreeMemory(vkLogicalDevice, stagingBufferMemory, nullptr);
+
+	return true;
+}
+
+bool VulkanModule::CreateUniformBuffer()
+{
+	bool ret = false;
+	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+	uniformBuffers.resize(swapchainImages.size());
+	uniformBuffersMemory.resize(swapchainImages.size());
+
+	for (size_t i = 0; i < swapchainImages.size(); i++) {
+		ret = CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+	}
+
+	return ret;
+}
+
+bool VulkanModule::CreateDescriptorPool()
+{
+	VkDescriptorPoolSize poolSize = {};
+	poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSize.descriptorCount = static_cast<uint32_t>(swapchainImages.size());
+
+	VkDescriptorPoolCreateInfo poolInfo = {};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = 1;
+	poolInfo.pPoolSizes = &poolSize;
+	poolInfo.maxSets = static_cast<uint32_t>(swapchainImages.size());
+
+	VkResult result = vkCreateDescriptorPool(vkLogicalDevice, &poolInfo, nullptr, &vkDescriptorPool);
+	if (result != VK_SUCCESS)
+	{
+		CONSOLE_ERROR("failed to create descriptor pool!", NULL);
+		return false;
+	}
+
+	return true;
+}
+
+bool VulkanModule::CreateDescriptorSets()
+{
+	std::vector<VkDescriptorSetLayout> layouts(swapchainImages.size(), vkDescriptorSetLayout);
+	VkDescriptorSetAllocateInfo allocInfo = {};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = vkDescriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImages.size());
+	allocInfo.pSetLayouts = layouts.data();
+
+	descriptorSets.resize(swapchainImages.size());
+
+	VkResult result = vkAllocateDescriptorSets(vkLogicalDevice, &allocInfo, descriptorSets.data());
+	if (result != VK_SUCCESS)
+	{
+		CONSOLE_ERROR("failed to allocate descriptor sets!", NULL);
+		return false;
+	}
+
+	for (size_t i = 0; i < swapchainImages.size(); i++) {
+		VkDescriptorBufferInfo bufferInfo = {};
+		bufferInfo.buffer = uniformBuffers[i];
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(UniformBufferObject);
+
+		VkWriteDescriptorSet descriptorWrite = {};
+		descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrite.dstSet = descriptorSets[i];
+		descriptorWrite.dstBinding = 0;
+		descriptorWrite.dstArrayElement = 0;
+		descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrite.descriptorCount = 1;
+		descriptorWrite.pBufferInfo = &bufferInfo;
+
+		vkUpdateDescriptorSets(vkLogicalDevice, 1, &descriptorWrite, 0, nullptr);
+	}
 
 	return true;
 }
@@ -1140,9 +1301,9 @@ VkImageView VulkanModule::CreateImageView(VkImage image, VkFormat format, VkImag
 	VkResult result = vkCreateImageView(vkLogicalDevice, &viewInfo, nullptr, &imageView);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create texture image view!");
+		CONSOLE_ERROR("failed to create texture image view!", NULL);
 		PrintVkResults(result);
-		return false;
+		return VK_NULL_HANDLE;
 	}
 	return imageView;
 }
@@ -1172,7 +1333,7 @@ VkFormat VulkanModule::FindSupportedFormat(const std::vector<VkFormat>& candidat
 		}
 	}
 
-	CONSOLE_ERROR("failed to find supported format!");
+	CONSOLE_ERROR("failed to find supported format!", NULL);
 	return ret;
 }
 
@@ -1185,9 +1346,9 @@ VkShaderModule VulkanModule::CreateShaderModule(std::string shaderCode)
 
 	VkShaderModule shaderModule;
 	VkResult result = vkCreateShaderModule(vkLogicalDevice, &createInfo, nullptr, &shaderModule);
-	if(result != VK_SUCCESS)
+	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create shader module!");
+		CONSOLE_ERROR("failed to create shader module!", NULL);
 		PrintVkResults(result);
 	}
 
@@ -1203,9 +1364,9 @@ bool VulkanModule::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
 	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 	VkResult result = vkCreateBuffer(vkLogicalDevice, &bufferInfo, nullptr, &buffer);
-	if (result != VK_SUCCESS) 
+	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create buffer!");
+		CONSOLE_ERROR("failed to create buffer!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -1223,7 +1384,7 @@ bool VulkanModule::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkM
 	result = vkAllocateMemory(vkLogicalDevice, &allocInfo, nullptr, &bufferMemory);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to allocate buffer memory!");
+		CONSOLE_ERROR("failed to allocate buffer memory!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -1244,7 +1405,7 @@ uint32_t VulkanModule::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags
 		}
 	}
 
-	CONSOLE_ERROR("failed to find suitable memory type!");
+	CONSOLE_ERROR("failed to find suitable memory type!", NULL);
 	return -1;
 }
 
@@ -1271,9 +1432,9 @@ VkCommandBuffer VulkanModule::BeginSingleTimeCommands()
 	VkResult result = vkAllocateCommandBuffers(vkLogicalDevice, &allocInfo, &commandBuffer);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to allocate buffer memory!");
+		CONSOLE_ERROR("failed to allocate buffer memory!", NULL);
 		PrintVkResults(result);
-		return false;
+		return VK_NULL_HANDLE;
 	}
 
 	VkCommandBufferBeginInfo beginInfo = {};
@@ -1320,7 +1481,7 @@ bool VulkanModule::CreateImage(uint32_t width, uint32_t height, uint32_t mipmapL
 	VkResult result = vkCreateImage(vkLogicalDevice, &imageInfo, nullptr, &image);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to create image!");
+		CONSOLE_ERROR("failed to create image!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -1336,7 +1497,7 @@ bool VulkanModule::CreateImage(uint32_t width, uint32_t height, uint32_t mipmapL
 	result = vkAllocateMemory(vkLogicalDevice, &allocInfo, nullptr, &imageMemory);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to allocate image memory!");
+		CONSOLE_ERROR("failed to allocate image memory!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -1344,7 +1505,7 @@ bool VulkanModule::CreateImage(uint32_t width, uint32_t height, uint32_t mipmapL
 	result = vkBindImageMemory(vkLogicalDevice, image, imageMemory, 0);
 	if (result != VK_SUCCESS)
 	{
-		CONSOLE_ERROR("failed to bind image!");
+		CONSOLE_ERROR("failed to bind image!", NULL);
 		PrintVkResults(result);
 		return false;
 	}
@@ -1448,12 +1609,12 @@ void VulkanModule::PrintVkResults(VkResult result)
 		break;
 	case VK_ERROR_FRAGMENTED_POOL:
 		message = R"(A pool allocation has failed due to fragmentation of the pool’s memory.
-					This must only be returned if no attempt to allocate host or device memory was made to accomodate the new allocation. 
-					This should be returned in preference to VK_ERROR_OUT_OF_POOL_MEMORY, but only if the implementation is certain that the pool allocation failure was due to fragmentation)";
+            This must only be returned if no attempt to allocate host or device memory was made to accomodate the new allocation.
+                This should be returned in preference to VK_ERROR_OUT_OF_POOL_MEMORY, but only if the implementation is certain that the pool allocation failure was due to fragmentation)";
 		break;
 	case VK_ERROR_OUT_OF_POOL_MEMORY:
-		message = R"(A pool memory allocation has failed. This must only be returned if no attempt to allocate host or device memory was made to accomodate the new allocation. 
-					If the failure was definitely due to fragmentation of the pool, VK_ERROR_FRAGMENTED_POOL should be returned instead)";
+		message = R"(A pool memory allocation has failed. This must only be returned if no attempt to allocate host or device memory was made to accomodate the new allocation.
+            If the failure was definitely due to fragmentation of the pool, VK_ERROR_FRAGMENTED_POOL should be returned instead)";
 		break;
 	case VK_ERROR_INVALID_EXTERNAL_HANDLE:
 		message = "An external handle is not a valid handle of the specified type";
@@ -1468,8 +1629,8 @@ void VulkanModule::PrintVkResults(VkResult result)
 		message = "A swapchain no longer matches the surface properties exactly, but can still be used to present to the surface successfully";
 		break;
 	case VK_ERROR_OUT_OF_DATE_KHR:
-		message = R"(A surface has changed in such a way that it is no longer compatible with the swapchain, and further presentation requests using the swapchain will fail. 
-					Applications must query the new surface properties and recreate their swapchain if they wish to continue presenting to the surface)";
+		message = R"(A surface has changed in such a way that it is no longer compatible with the swapchain, and further presentation requests using the swapchain will fail.
+            Applications must query the new surface properties and recreate their swapchain if they wish to continue presenting to the surface)";
 		break;
 	case VK_ERROR_INCOMPATIBLE_DISPLAY_KHR:
 		message = "The display used by a swapchain does not use the same presentable image layout, or is incompatible in a way that prevents sharing an image";
@@ -1493,7 +1654,7 @@ void VulkanModule::PrintVkResults(VkResult result)
 		break;
 	}
 
-	CONSOLE_ERROR(message);
+	CONSOLE_ERROR("%s", message);
 }
 
 bool VulkanModule::PrintVKDebugMessages(const char * msg)

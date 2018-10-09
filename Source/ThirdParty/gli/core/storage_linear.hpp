@@ -13,9 +13,9 @@
 #include "../format.hpp"
 
 // GLM
-#include <glm/gtc/round.hpp>
-#include <glm/gtc/bitfield.hpp>
-#include <glm/gtx/component_wise.hpp>
+#include <gtc/round.hpp>
+#include <gtc/bitfield.hpp>
+#include <gtx/component_wise.hpp>
 //#include <glm/gtx/integer.hpp>
 //#include <glm/gtx/bit.hpp>
 //#include <glm/gtx/wrap.hpp>

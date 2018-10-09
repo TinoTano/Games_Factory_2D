@@ -5,7 +5,7 @@
 #include "Application.h"
 
 #define GLFW_INCLUDE_VULKAN
-#include "ThirdParty/glfw-3.2.1/include/glfw3.h"
+#include <glfw3.h>
 
 class VulkanModule : public Module
 {
@@ -55,7 +55,7 @@ private:
 	bool CreateCommandPool();
 	bool CreateDepthResources();
 	bool CreateFramebuffers();
-	bool CreateCommandBuffers();
+	bool CreateCommandBuffers(uint32_t imageIndex = 0);
 	bool CreateSyncObjects();
 
 	//Check if gpu is good for us
@@ -76,10 +76,18 @@ private:
 
 	bool CreateIndexBuffer();
 
+	bool CreateUniformBuffer();
+
+	bool CreateDescriptorPool();
+
+	bool CreateDescriptorSets();
+
+	void UpdateUniformBuffer(uint32_t imageIndex);
+
 	//Return better swap chain format from available formats
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 
-	//Return better swap chain presentation mode from available modes 
+	//Return better swap chain presentation mode from available modes
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 
 	//Return swap chain extent
@@ -140,8 +148,8 @@ private:
 	//Swap chain extent (x,y,w,h)
 	VkExtent2D vkSwapchainExtent;
 
-	//we need to tell Vulkan about the framebuffer attachments that will be used while rendering. 
-	//We need to specify how many color and depth buffers there will be, how many samples to use for each of them and how their contents should be handled 
+	//we need to tell Vulkan about the framebuffer attachments that will be used while rendering.
+	//We need to specify how many color and depth buffers there will be, how many samples to use for each of them and how their contents should be handled
 	//throughout the rendering operations. All of this information is wrapped in a render pass object
 	VkRenderPass vkRenderPass;
 
@@ -159,6 +167,9 @@ private:
 	std::vector<VkFramebuffer> swapchainFramebuffers;
 	std::vector<VkCommandBuffer> commandBuffers;
 	std::vector<VkDescriptorSet> vkDescriptorSets;
+	std::vector<VkBuffer> uniformBuffers;
+	std::vector<VkDeviceMemory> uniformBuffersMemory;
+	std::vector<VkDescriptorSet> descriptorSets;
 
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
@@ -172,6 +183,8 @@ private:
 	std::vector<VkSemaphore> vkImageAvailableSemaphores;
 	std::vector<VkSemaphore> vkRenderFinishedSemaphores;
 	std::vector<VkFence> vkInFlightFences;
+
+	VkDescriptorPool vkDescriptorPool;
 
 	int currentFrame = 0;
 };

@@ -1,7 +1,7 @@
 #pragma once
 #include "Module.h"
-#include "ThirdParty/glm/vec2.hpp"
-#include "ThirdParty/glm/gtc/matrix_transform.hpp"
+#include <vec2.hpp>
+#include <gtc/matrix_transform.hpp>
 
 class CameraModule :
 	public Module
@@ -25,16 +25,23 @@ public:
 	void IncreaseZoom(float increase);
 	float GetZoom() const;
 
+	void SetOrthoprojection(float width, float height);
 	glm::mat4 GetOrthoProjection() const;
+	glm::mat4 GetViewMatrix() const;
+	glm::vec2 GetCameraCenter() const;
+
+	void UpdateCameraMatrix(float width, float height);
 
 private:
-	void CalculeOrthoProjection();
+	void UpdateViewMatrix();
 
 private:
 	glm::vec2 cameraPosition;
 	float cameraRotation;
 	float cameraZoom;
-	glm::mat4 orthoProjection;
+	glm::mat4 projMatrix;
+	glm::mat4 viewMatrix;
+	glm::vec2 cameraCenter;
 	bool updateCamera;
 };
 

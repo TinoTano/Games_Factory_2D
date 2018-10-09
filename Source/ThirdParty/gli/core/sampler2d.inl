@@ -1,7 +1,7 @@
 #include "clear.hpp"
-#include <glm/gtc/integer.hpp>
-#include <glm/exponential.hpp>
-#include <glm/vector_relational.hpp>
+#include <gtc/integer.hpp>
+#include <exponential.hpp>
+#include <vector_relational.hpp>
 
 namespace gli
 {

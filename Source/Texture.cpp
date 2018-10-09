@@ -15,14 +15,14 @@ bool Texture::LoadFromFile(const char * filePath)
 {
 	bool ret = false;
 
-	if (App->fileSystemModule->FileExist(filePath))
+	/*if (App->fileSystemModule->FileExist(filePath))
 	{
 		gli::texture2d texture(gli::load(filePath));
 		width = texture.extent().x;
 		height = texture.extent().y;
 		mipmapLevels = texture.levels();
 		ret = true;
-	}
+	}*/
 
 	return ret;
 }

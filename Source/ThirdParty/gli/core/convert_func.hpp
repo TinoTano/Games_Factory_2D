@@ -10,8 +10,8 @@
 #include "../texture_cube_array.hpp"
 #include "./s3tc.hpp"
 #include "./bc.hpp"
-#include <glm/gtc/packing.hpp>
-#include <glm/gtc/color_space.hpp>
+#include <gtc/packing.hpp>
+#include <gtc/color_space.hpp>
 #include <limits>
 
 namespace gli{

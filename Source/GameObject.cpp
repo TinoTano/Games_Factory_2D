@@ -43,6 +43,12 @@ void GameObject::SetRotation(float angle)
 	transform->SetRotation(angle);
 }
 
+void GameObject::IncreaseRotation(float angle)
+{
+	ComponentTransform* transform = GetTransform();
+	transform->IncreaseRotation(angle);
+}
+
 void GameObject::IncreaseScale(float x, float y)
 {
 	ComponentTransform* transform = GetTransform();
@@ -98,4 +104,11 @@ std::vector<Component*> GameObject::GetComponentsOfType(Component::COMPONENT_TYP
 	}
 
 	return components;
+}
+
+glm::mat4 GameObject::GetModelMatrix() const
+{
+	ComponentTransform* transform = (ComponentTransform*)(GetComponentOfType(Component::TRANSFORM));
+
+	return transform->GetModelMatrix();
 }

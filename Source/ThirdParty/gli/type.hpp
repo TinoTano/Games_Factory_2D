@@ -8,8 +8,8 @@
 
 // GLM
 #define GLM_FORCE_EXPLICIT_CTOR
-#include <glm/glm.hpp>
-#include <glm/gtc/vec1.hpp>
+#include <glm.hpp>
+#include <gtc/vec1.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 
 #if GLM_COMPILER & GLM_COMPILER_VC

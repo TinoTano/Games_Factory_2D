@@ -1,20 +1,28 @@
 #include "ComponentSprite.h"
 #define GLM_ENABLE_EXPERIMENTAL
-#include "ThirdParty/glm/gtx/rotate_vector.hpp"
+#include <gtx/rotate_vector.hpp>
 #include "Globals.h"
+#include <gtc/random.hpp>
+#include <time.h>
 
 ComponentSprite::ComponentSprite(GameObject& gameObject, const char* componentName, COMPONENT_TYPE type) :
 	Component(gameObject, componentName, type)
 {
-	vertices[0].pos = { -0.50f, -0.50f };
-	vertices[1].pos = { 0.50f, -0.50f };
-	vertices[2].pos = { 0.50f, 0.50f };
-	vertices[3].pos = { -0.50f, 0.50f };
+	srand(time(NULL));
+	glm::vec2 lt(glm::linearRand(-600, 0), glm::linearRand(-450, 0));
+	glm::vec2 rt(lt.x + 10, lt.y);
+	glm::vec2 lb(rt.x, lt.y + 10);
+	glm::vec2 rb(lt.x, lt.y + 10);
 
-	vertices[0].currentPos = { -0.50f, 0.50f , 0.0f, 1};
-	vertices[1].currentPos = { 0.50f, 0.50f , 0.0f, 1 };
-	vertices[2].currentPos = { 0.50f, -0.50f , 0.0f, 1 };
-	vertices[3].currentPos = { -0.50f, -0.50f , 0.0f, 1 };
+	/*vertices[0].pos = { -20.50f, -20.50f };
+	vertices[1].pos = { 20.50f, -20.50f };
+	vertices[2].pos = { 20.50f, 20.50f };
+	vertices[3].pos = { -20.50f, 20.50f };*/
+
+	vertices[0].pos = lt;
+	vertices[1].pos = rt;
+	vertices[2].pos = lb;
+	vertices[3].pos = rb;
 
 	vertices[0].color = vertices[1].color = vertices[2].color = vertices[3].color = { 1.0f, 1.0f, 1.0f, 1.0f };
 

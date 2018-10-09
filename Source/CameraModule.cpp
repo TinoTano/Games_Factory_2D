@@ -1,13 +1,17 @@
 #include "CameraModule.h"
 #include "Globals.h"
+#include "Application.h"
+#include "WindowModule.h"
 
 CameraModule::CameraModule(const char* module_name, bool game_module) : Module(module_name, game_module)
 {
 	updateCamera = false;
-	orthoProjection = glm::mat4();
+	projMatrix = glm::mat4();
+	viewMatrix = glm::mat4();
 	cameraPosition = glm::vec2(0);
 	cameraRotation = 0;
 	cameraZoom = 1;
+	cameraCenter = glm::vec2(0);
 }
 
 CameraModule::~CameraModule()
@@ -16,7 +20,7 @@ CameraModule::~CameraModule()
 
 bool CameraModule::Init()
 {
-	CalculeOrthoProjection();
+	UpdateCameraMatrix(App->windowModule->GetWidth(), App->windowModule->GetHeight());
 	return true;
 }
 
@@ -24,10 +28,16 @@ bool CameraModule::Update(float delta_time)
 {
 	if (updateCamera)
 	{
-		CalculeOrthoProjection();
+		UpdateViewMatrix();
 		updateCamera = false;
 	}
 	return true;
+}
+
+void CameraModule::UpdateCameraMatrix(float width, float height)
+{
+	SetOrthoprojection(width, height);
+	UpdateViewMatrix();
 }
 
 void CameraModule::SetPosition(glm::vec2 position)
@@ -72,7 +82,7 @@ void CameraModule::SetZoom(float zoom)
 
 void CameraModule::IncreaseZoom(float increase)
 {
-	cameraZoom += increase;
+	cameraZoom *= increase;
 	updateCamera = true;
 }
 
@@ -81,20 +91,34 @@ float CameraModule::GetZoom() const
 	return cameraZoom;
 }
 
-glm::mat4 CameraModule::GetOrthoProjection() const
+void CameraModule::SetOrthoprojection(float width, float height)
 {
-	return orthoProjection;
+	projMatrix = glm::ortho(0.0f, width, height, 0.0f);
+
+	cameraCenter.x = width * 0.5f;
+	cameraCenter.y = height * 0.5f;
 }
 
-void CameraModule::CalculeOrthoProjection()
+glm::mat4 CameraModule::GetOrthoProjection() const
 {
-	glm::vec2 cameraViewSize = glm::vec2(static_cast<float>(1) / (cameraZoom), static_cast<float>(1) / (cameraZoom));
-	glm::vec2 viewStart(cameraPosition.x - cameraViewSize.x, cameraPosition.y - cameraViewSize.y);
-	glm::vec2 viewEnd(cameraPosition.x + cameraViewSize.x, cameraPosition.y + cameraViewSize.y);
+	return projMatrix;
+}
 
-	//CONSOLE_LOG("%.3f, %.3f, %.3f, %3.f", viewStart.x, viewEnd.x, viewEnd.y, viewStart.y);
+glm::mat4 CameraModule::GetViewMatrix() const
+{
+	return viewMatrix;
+}
 
-	orthoProjection = glm::ortho(0.0f, 1 * 1200 * cameraZoom, 1 * 900 * cameraZoom, 0.0f);
-	//orthoProjection = glm::ortho(viewStart.x, 1 * viewEnd.x * cameraZoom, 1 * viewEnd.y * cameraZoom, viewStart.y, -100.0f, 0.1f);
-	orthoProjection = glm::rotate(orthoProjection, glm::radians(cameraRotation), glm::vec3(0.f, 0.f, 1.f));
+glm::vec2 CameraModule::GetCameraCenter() const
+{
+	return cameraCenter;
+}
+
+void CameraModule::UpdateViewMatrix()
+{
+	glm::mat4 view(1.0f);
+	view = glm::translate(view, glm::vec3(cameraCenter.x + cameraPosition.x, cameraCenter.y + cameraPosition.y, 0.0f));
+	view = glm::rotate(view, glm::radians(cameraRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	view = glm::scale(view, glm::vec3(cameraZoom, cameraZoom, 0.0f));
+	viewMatrix = view;
 }

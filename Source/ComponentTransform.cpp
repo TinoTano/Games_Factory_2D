@@ -1,6 +1,5 @@
 #include "ComponentTransform.h"
 #include "GameObject.h"
-#include "ComponentSprite.h"
 #include "Globals.h"
 
 ComponentTransform::ComponentTransform(GameObject& gameObject, const char* componentName, COMPONENT_TYPE type) :
@@ -13,6 +12,8 @@ ComponentTransform::ComponentTransform(GameObject& gameObject, const char* compo
 	globalPosition = { 0,0 };
 	globalRotation = 0;
 	globalScale = { 1,1 };
+
+	modelMatrix = glm::mat4(1);
 }
 
 ComponentTransform::~ComponentTransform()
@@ -23,7 +24,7 @@ ComponentTransform::~ComponentTransform()
 void ComponentTransform::SetPosition(glm::vec2 position)
 {
 	GameObject* parent = gameObject->GetParent();
-	ComponentSprite* sprite = gameObject->GetSprite();
+
 	if (parent != nullptr)
 	{
 		localPosition = position;
@@ -33,18 +34,18 @@ void ComponentTransform::SetPosition(glm::vec2 position)
 	{
 		localPosition = position;
 		globalPosition = position;
-
-		if (sprite != nullptr)
-		{
-			sprite->UpdateVerticesPositions(globalPosition.x, globalPosition.y);
-		}
 	}
+
+	glm::vec2 diff = localPosition - prevPos;
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(diff, 0.0f));
 }
 
 void ComponentTransform::IncreasePosition(glm::vec2 increase)
 {
-	float i = globalPosition.x + increase.x;
-	SetPosition({ i, globalPosition.y });
+	prevPos = localPosition;
+	localPosition += increase;
+	SetPosition(localPosition);
 }
 
 glm::vec2 ComponentTransform::GetLocalPosition() const
@@ -80,22 +81,31 @@ float ComponentTransform::GetGlobalPositionY() const
 void ComponentTransform::SetRotation(float angle)
 {
 	GameObject* parent = gameObject->GetParent();
-	ComponentSprite* sprite = gameObject->GetSprite();
+
 	if (parent != nullptr)
 	{
-		localRotation += angle;
+		localRotation = angle;
 		globalRotation = localRotation + parent->GetTransform()->GetGlobalRotation();
 	}
 	else
 	{
-		localPosition += angle;
-		globalPosition += angle;
-
-		if (sprite != nullptr)
-		{
-			sprite->UpdateVerticesRotation(angle);
-		}
+		localRotation = angle;
+		globalRotation = angle;
 	}
+
+	float diff = localRotation - prevRot;
+	CONSOLE_LOG("%.3f", diff);
+
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(-globalPosition.x, -globalPosition.y, 0.0f));
+	modelMatrix = glm::rotate(modelMatrix, glm::radians(diff), glm::vec3(0.0f, 0.0f, 1.0f));
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(globalPosition.x, globalPosition.y, 0.0f));
+}
+
+void ComponentTransform::IncreaseRotation(float angle)
+{
+	prevRot = localRotation;
+	localRotation += angle;
+	SetRotation(localRotation);
 }
 
 float ComponentTransform::GetLocalRotation() const
@@ -111,7 +121,7 @@ float ComponentTransform::GetGlobalRotation() const
 void ComponentTransform::SetScale(glm::vec2 scale)
 {
 	GameObject* parent = gameObject->GetParent();
-	ComponentSprite* sprite = gameObject->GetSprite();
+
 	if (parent != nullptr)
 	{
 		localScale = scale;
@@ -121,19 +131,36 @@ void ComponentTransform::SetScale(glm::vec2 scale)
 	{
 		localScale = scale;
 		globalScale = scale;
-
-		if (sprite != nullptr)
-		{
-			sprite->UpdateVerticesScale(scale.x, scale.y);
-		}
 	}
+
+	glm::vec2 origin(0, 0);
+
+	float angle = -globalRotation * 3.141592654f / 180.f;
+	float cosine = static_cast<float>(std::cos(angle));
+	float sine = static_cast<float>(std::sin(angle));
+	float sxc = globalScale.x * cosine;
+	float syc = globalScale.y * cosine;
+	float sxs = globalScale.x * sine;
+	float sys = globalScale.y * sine;
+	float tx = -origin.x * sxc - origin.y * sys + globalPosition.x;
+	float ty = origin.x * sxs - origin.y * syc + globalPosition.y;
+
+	modelMatrix = glm::mat4((glm::mat3(sxc, sys, tx,
+		-sxs, syc, ty,
+		0.f, 0.f, 1.f)));
+
+	glm::vec2 diff = localScale - prevScale;
+	/*diff.x = 1 * diff.x;
+	diff.y = 1 * diff.y;*/
+	//CONSOLE_LOG("%.3f, %.3f", diff.x, diff.y);
+	//modelMatrix = glm::scale(modelMatrix, glm::vec3(globalScale, 1.0f));
 }
 
 void ComponentTransform::IncreaseScale(glm::vec2 increase)
 {
-	CONSOLE_LOG("%.3f, %.3f", (localScale + increase).x, (localScale + increase).y);
-	float i = 1 + increase.x;
-	SetScale({ i, i });
+	prevScale = localScale;
+	localScale += increase;
+	SetScale(localScale);
 }
 
 glm::vec2 ComponentTransform::GetLocalScale() const
@@ -164,4 +191,9 @@ float ComponentTransform::GetGlobalScaleX() const
 float ComponentTransform::GetGlobalScaleY() const
 {
 	return globalScale.y;
+}
+
+glm::mat4 ComponentTransform::GetModelMatrix() const
+{
+	return modelMatrix;
 }
