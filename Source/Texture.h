@@ -1,8 +1,8 @@
 #pragma once
 #include "Resource.h"
-#include "ThirdParty\glm\vec2.hpp"
-#include "ThirdParty\glm\vec3.hpp"
-#include "ThirdParty\Vulkan_1.1.82.1\Include\vulkan\vulkan.h"
+#include <vec2.hpp>
+#include <vec3.hpp>
+#include <vulkan/vulkan.h>
 #include <vector>
 
 class Texture :

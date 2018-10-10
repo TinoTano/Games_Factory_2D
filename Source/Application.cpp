@@ -180,7 +180,11 @@ bool Application::PostUpdate()
 
 	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{
+#ifdef _WIN32
 		Sleep(cappedMs - lastFrameMs);
+#else
+        std::this_thread::sleep_for(std::chrono::milliseconds(cappedMs - lastFrameMs));
+#endif
 	}
 
 	return ret;

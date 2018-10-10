@@ -19,6 +19,6 @@ public:
 
 public:
 	std::vector<GameObject*> sceneGameObjects;
-
+    bool updateSceneVertices;
 };
 

@@ -10,7 +10,7 @@
 
 SceneModule::SceneModule(const char* moduleName, bool gameModule) : Module(moduleName, gameModule)
 {
-
+    updateSceneVertices = false;
 }
 
 SceneModule::~SceneModule()
@@ -19,20 +19,24 @@ SceneModule::~SceneModule()
 
 bool SceneModule::Init()
 {
-	GameObject* go = new GameObject();
-	sceneGameObjects.emplace_back(go);
-	return true;
+    GameObject* go = new GameObject();
+    sceneGameObjects.emplace_back(go);
+    return true;
 }
 
 bool SceneModule::Update(float delta_time)
 {
-
-	return true;
+    if(App->GetFPS() > 59)
+    {
+        CreateNewObject(nullptr);
+    }
+    return true;
 }
 
 void SceneModule::CreateNewObject(GameObject* parent)
 {
-	GameObject* go = new GameObject();
-	go->SetParent(*parent);
-	sceneGameObjects.emplace_back(go);
+    GameObject* go = new GameObject();
+    go->SetParent(*parent);
+    sceneGameObjects.emplace_back(go);
+    updateSceneVertices = true;
 }

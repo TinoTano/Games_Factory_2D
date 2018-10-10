@@ -55,7 +55,7 @@ private:
 	bool CreateCommandPool();
 	bool CreateDepthResources();
 	bool CreateFramebuffers();
-	bool CreateCommandBuffers(uint32_t imageIndex = 0);
+	bool CreateCommandBuffers();
 	bool CreateSyncObjects();
 
 	//Check if gpu is good for us
@@ -81,6 +81,8 @@ private:
 	bool CreateDescriptorPool();
 
 	bool CreateDescriptorSets();
+    
+    bool UpdateCommandBuffers();
 
 	void UpdateUniformBuffer(uint32_t imageIndex);
 
