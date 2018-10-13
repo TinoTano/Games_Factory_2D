@@ -9,6 +9,7 @@
 #include "VulkanModule.h"
 #include "SceneModule.h"
 #include "CameraModule.h"
+#include "EditorModule.h"
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -34,13 +35,14 @@ Application::Application()
 
 	engineState = EngineState::OnStop;
 
-	modulesList.reserve(6);
+	modulesList.reserve(7);
 	modulesList.emplace_back(windowModule = std::make_shared<WindowModule>("Window Module"));
 	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
 	modulesList.emplace_back(cameraModule = std::make_shared<CameraModule>("Camera Module"));
 	modulesList.emplace_back(sceneModule = std::make_shared<SceneModule>("Scene Module"));
 	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
 	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
+    modulesList.emplace_back(editorModule = std::make_shared<EditorModule>("Editor Module"));
 
 	fileSystemModule = std::make_shared<FileSystemModule>("File System Module");
 }

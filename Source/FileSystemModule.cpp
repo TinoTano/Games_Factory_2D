@@ -7,7 +7,7 @@
 
 //namespace fs = std::experimental::filesystem;
 
-FileSystemModule::FileSystemModule(const char* module_name, bool game_module) : Module(module_name, game_module)
+FileSystemModule::FileSystemModule(const char* moduleName, bool gameModule) : Module(moduleName, gameModule)
 {
 }
 

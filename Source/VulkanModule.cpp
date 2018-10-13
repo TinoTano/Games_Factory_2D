@@ -13,8 +13,10 @@
 #include "CameraModule.h"
 
 std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0
+    0, 1, 2, 0, 2, 3
 };
+
+//std::vector<uint16_t> indices;
 
 struct UniformBufferObject {
     glm::mat4 model;
@@ -175,7 +177,7 @@ bool VulkanModule::InitVulkan()
     if (!CreateGraphicsPipeline()) return false;
     if (!CreateFramebuffers()) return false;
     if (!CreateCommandPool()) return false;
-    if (!CreateVertexBuffer()) return false;
+    //if (!CreateVertexBuffer()) return false;
     if (!CreateIndexBuffer()) return false;
     if (!CreateUniformBuffer()) return false;
     if (!CreateDescriptorPool()) return false;
@@ -188,10 +190,10 @@ bool VulkanModule::InitVulkan()
 
 bool VulkanModule::Render()
 {
-    vkWaitForFences(vkLogicalDevice, 1, &vkInFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
-    
     uint32_t imageIndex;
     VkResult result = vkAcquireNextImageKHR(vkLogicalDevice, vkSwapchain, std::numeric_limits<uint64_t>::max(), vkImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+    
+    vkWaitForFences(vkLogicalDevice, 1, &vkInFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
     
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         RecreateSwapChain(vkSwapchain);
@@ -205,8 +207,6 @@ bool VulkanModule::Render()
     vkResetCommandPool(vkLogicalDevice, vkCommandPool, 0);
     
     UpdateCommandBuffers();
-    
-    //UpdateUniformBuffer(imageIndex);
     
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -265,7 +265,7 @@ bool VulkanModule::UpdateCommandBuffers()
     for (size_t i = 0; i < commandBuffers.size(); i++) {
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         
         VkResult result = vkBeginCommandBuffer(commandBuffers[i], &beginInfo);
         if (result != VK_SUCCESS)
@@ -297,46 +297,48 @@ bool VulkanModule::UpdateCommandBuffers()
         
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         
-        vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
-        
-        if(App->sceneModule->updateSceneVertices)
-        {
-            vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
-            vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
-            CreateVertexBuffer();
-            App->sceneModule->updateSceneVertices = false;
-        }
-        VkBuffer vertexBuffers[] = { vertexBuffer };
-        VkDeviceSize offsets[] = { 0 };
-        
-        vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-        
-        vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-        
-        vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-        
-        //std::vector<GameObject*> sceneGameObjects = App->sceneModule->sceneGameObject;
-        int vertexOffset = 0;
         int count = App->sceneModule->sceneGameObjects.size();
-        for(int j = 0; j < count; j++)
+        if(count > 0)
         {
-            UniformBufferObject ubo = {};
+            vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
             
-            ubo.view = App->cameraModule->GetViewMatrix();
-            ubo.proj = App->cameraModule->GetOrthoProjection();
-            ubo.model = App->sceneModule->sceneGameObjects[j]->GetModelMatrix();
+            if(App->sceneModule->updateSceneVertices)
+            {
+                vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
+                vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
+                CreateVertexBuffer();
+                App->sceneModule->updateSceneVertices = false;
+            }
+            VkBuffer vertexBuffers[] = { vertexBuffer };
+            VkDeviceSize offsets[] = { 0 };
             
-            vkCmdPushConstants(
-                               commandBuffers[i],
-                               vkPipelineLayout,
-                               VK_SHADER_STAGE_VERTEX_BIT,
-                               0,
-                               sizeof(UniformBufferObject),
-                               &ubo
-                               );
+            vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
             
-            vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, vertexOffset, 0);
-            vertexOffset += 4;
+            vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            
+            vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkPipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+            
+            int vertexOffset = 0;
+            for(int j = 0; j < count; j++)
+            {
+                UniformBufferObject ubo = {};
+                
+                ubo.view = App->cameraModule->GetViewMatrix();
+                ubo.proj = App->cameraModule->GetOrthoProjection();
+                ubo.model = App->sceneModule->sceneGameObjects[j]->GetModelMatrix();
+                
+                vkCmdPushConstants(
+                                   commandBuffers[i],
+                                   vkPipelineLayout,
+                                   VK_SHADER_STAGE_VERTEX_BIT,
+                                   0,
+                                   sizeof(UniformBufferObject),
+                                   &ubo
+                                   );
+                
+                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint16_t>(indices.size()), 1, 0, vertexOffset, 0);
+                vertexOffset += 4;
+            }
         }
         
         vkCmdEndRenderPass(commandBuffers[i]);
@@ -1000,6 +1002,18 @@ bool VulkanModule::CreateVertexBuffer()
 
 bool VulkanModule::CreateIndexBuffer()
 {
+    /*int index = 0;
+    int count = App->sceneModule->sceneGameObjects.size();
+    for(int i = 0; i < count; i++)
+    {
+        indices.emplace_back(index);
+        indices.emplace_back(index + 1);
+        indices.emplace_back(index + 2);
+        indices.emplace_back(index + 2);
+        indices.emplace_back(index + 3);
+        indices.emplace_back(index);
+        index += 6;
+    }*/
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
     
     VkBuffer stagingBuffer;

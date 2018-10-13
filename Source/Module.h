@@ -5,7 +5,7 @@
 class Module
 {
 public:
-	Module(const char* module_name, bool game_module = false) : module_name(module_name), game_module(game_module) {}
+	Module(const char* moduleName, bool gameModule = false) : moduleName(moduleName), gameModule(gameModule) {}
 	virtual ~Module() {}
 
 	virtual bool Init()
@@ -40,10 +40,10 @@ public:
 
 	const char* GetName() const
 	{
-		return module_name;
+		return moduleName;
 	}
 
 private:
-	bool game_module;
-	const char* module_name;
+	bool gameModule;
+	const char* moduleName;
 };

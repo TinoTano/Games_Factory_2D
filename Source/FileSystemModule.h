@@ -5,7 +5,7 @@ class FileSystemModule :
 	public Module
 {
 public:
-	FileSystemModule(const char* module_name, bool game_module = false);
+	FileSystemModule(const char* moduleName, bool gameModule = false);
 	~FileSystemModule();
 
 	std::string LoadBinaryTextFile(const char* filePath);

@@ -13,6 +13,7 @@ class VulkanModule;
 class Timer;
 class SceneModule;
 class CameraModule;
+class EditorModule;
 
 class Application
 {
@@ -59,6 +60,7 @@ public:
 	std::shared_ptr<VulkanModule> vulkanModule;
 	std::shared_ptr<SceneModule> sceneModule;
 	std::shared_ptr<CameraModule> cameraModule;
+    std::shared_ptr<EditorModule> editorModule;
 
 private:
 	std::vector<std::shared_ptr<Module>> modulesList;
