@@ -1,7 +1,5 @@
 #pragma once
 #include "Module.h"
-#include <vector>
-#include <list>
 
 class GameObject;
 
@@ -15,10 +13,11 @@ public:
 	bool Init();
 	bool Update(float delta_time);
 
-	void CreateNewObject(GameObject* parent);
+	GameObject* CreateNewObject(GameObject* parent = nullptr, std::string name = "");
 
 public:
-	std::vector<GameObject*> sceneGameObjects;
+	GameObject* rootGameObject;
     bool updateSceneVertices;
+	int spritesNum;
 };
 

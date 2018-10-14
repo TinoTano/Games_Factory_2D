@@ -70,10 +70,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)/ThirdParty/glm;$(ProjectDir)/ThirdParty/glfw-3.2.1/include;$(ProjectDir)/ThirdParty/Vulkan_1.1.82.1/Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/ThirdParty/glm;$(ProjectDir)/ThirdParty/glfw-3.2.1/include;$(ProjectDir)/ThirdParty/Vulkan_1.1.82.1/Include;$(ProjectDir)/ThirdParty/ImGui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)/ThirdParty/glm;$(ProjectDir)/ThirdParty/glfw-3.2.1/include;$(ProjectDir)/ThirdParty/Vulkan_1.1.82.1/Include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/ThirdParty/glm;$(ProjectDir)/ThirdParty/glfw-3.2.1/include;$(ProjectDir)/ThirdParty/Vulkan_1.1.82.1/Include;$(ProjectDir)/ThirdParty/ImGui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -145,9 +145,11 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentSprite.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
+    <ClCompile Include="EditorModule.cpp" />
     <ClCompile Include="FileSystemModule.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="InputModule.cpp" />
+    <ClCompile Include="InspectorWindow.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="md5.cpp" />
@@ -155,8 +157,15 @@
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceManagerModule.cpp" />
     <ClCompile Include="SceneModule.cpp" />
+    <ClCompile Include="HierarchyWindow.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureImporter.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="VulkanModule.cpp" />
     <ClCompile Include="WindowModule.cpp" />
@@ -167,18 +176,30 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentSprite.h" />
     <ClInclude Include="ComponentTransform.h" />
+    <ClInclude Include="EditorModule.h" />
+    <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="FileSystemModule.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="InputModule.h" />
+    <ClInclude Include="InspectorWindow.h" />
     <ClInclude Include="md5.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="RendererModule.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceManagerModule.h" />
     <ClInclude Include="SceneModule.h" />
+    <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureImporter.h" />
+    <ClInclude Include="ThirdParty\ImGui\imconfig.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui_impl_vulkan.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui_internal.h" />
+    <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h" />
+    <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VulkanModule.h" />

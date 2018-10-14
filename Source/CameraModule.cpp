@@ -117,7 +117,7 @@ glm::vec2 CameraModule::GetCameraCenter() const
 void CameraModule::UpdateViewMatrix()
 {
 	glm::mat4 view(1.0f);
-	view = glm::translate(view, glm::vec3(cameraCenter.x + cameraPosition.x, cameraCenter.y + cameraPosition.y, 0.0f));
+	view = glm::translate(view, glm::vec3(cameraCenter.x + (-cameraPosition.x), cameraCenter.y + (-cameraPosition.y), 0.0f));
 	view = glm::rotate(view, glm::radians(cameraRotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	view = glm::scale(view, glm::vec3(cameraZoom, cameraZoom, 0.0f));
 	viewMatrix = view;

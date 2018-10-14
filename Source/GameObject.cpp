@@ -2,13 +2,17 @@
 #include "Component.h"
 #include "ComponentTransform.h"
 #include "ComponentSprite.h"
+#include "Globals.h"
 
-GameObject::GameObject()
+GameObject::GameObject(std::string name, GameObject* parent) : name(name)
 {
-	parent = nullptr;
-
 	components.emplace_back(new ComponentTransform(*this, "Transform", Component::TRANSFORM));
-	components.emplace_back(new ComponentSprite(*this, "Sprite", Component::SPRITE));
+
+	if (parent != nullptr)
+	{
+		SetParent(*parent);
+	}
+	active = true;
 }
 
 GameObject::~GameObject()
@@ -17,6 +21,13 @@ GameObject::~GameObject()
 
 void GameObject::SetParent(GameObject& parent)
 {
+	if (this->parent == &parent) return;
+
+	if (this->parent != nullptr)
+	{
+		this->parent->RemoveChild(this);
+	}
+	parent.AddChild(this);
 	this->parent = &parent;
 }
 
@@ -111,4 +122,66 @@ glm::mat4 GameObject::GetModelMatrix() const
 	ComponentTransform* transform = (ComponentTransform*)(GetComponentOfType(Component::TRANSFORM));
 
 	return transform->GetModelMatrix();
+}
+
+std::vector<Component*> GameObject::GetComponents()
+{
+	return components;
+}
+
+void GameObject::AddComponent(Component::COMPONENT_TYPE type)
+{
+	switch (type)
+	{
+	case Component::TRANSFORM:
+		CONSOLE_ERROR("GameObjects cannot have more than 1 transform component");
+		break;
+	case Component::SPRITE:
+		if (GetSprite() != nullptr)
+		{
+			CONSOLE_ERROR("GameObjects cannot have more than 1 sprite component");
+		}
+		else
+		{
+			components.emplace_back(new ComponentSprite(*this, "Sprite", Component::SPRITE));
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+std::vector<GameObject*> GameObject::GetChilds() const
+{
+	return childs;
+}
+
+void GameObject::AddChild(GameObject* gameObject)
+{
+	childs.emplace_back(gameObject);
+}
+
+void GameObject::RemoveChild(GameObject * gameObject)
+{
+	childs.erase(std::remove(childs.begin(), childs.end(), gameObject));
+}
+
+void GameObject::SetName(const char * name)
+{
+	this->name = name;
+}
+
+std::string GameObject::GetName() const
+{
+	return name;
+}
+
+void GameObject::SetActive(bool active)
+{
+	this->active = active;
+}
+
+bool GameObject::GetActive() const
+{
+	return active;
 }

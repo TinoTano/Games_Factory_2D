@@ -1,9 +1,8 @@
 #include "ComponentSprite.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <gtx/rotate_vector.hpp>
-#include "Globals.h"
-#include <gtc/random.hpp>
-#include <time.h>
+#include "Application.h"
+#include "SceneModule.h"
 
 ComponentSprite::ComponentSprite(GameObject& gameObject, const char* componentName, COMPONENT_TYPE type) :
 	Component(gameObject, componentName, type)
@@ -17,10 +16,14 @@ ComponentSprite::ComponentSprite(GameObject& gameObject, const char* componentNa
 
 	SetPivot((vertices[0].pos.x + vertices[1].pos.x + vertices[2].pos.x + vertices[3].pos.x) / 3,
 		(vertices[0].pos.y + vertices[1].pos.y + vertices[2].pos.y + vertices[3].pos.y) / 3);
+
+	App->sceneModule->spritesNum++;
+	App->sceneModule->updateSceneVertices = true;
 }
 
 ComponentSprite::~ComponentSprite()
 {
+	App->sceneModule->spritesNum--;
 }
 
 void ComponentSprite::SetTexture(Texture& texture)

@@ -2,10 +2,7 @@
 #include "Module.h"
 #include <vector>
 #include <optional>
-#include "Application.h"
-
-#define GLFW_INCLUDE_VULKAN
-#include <glfw3.h>
+#include <vulkan/vulkan.h>
 
 class VulkanModule : public Module
 {
@@ -37,6 +34,8 @@ public:
 
 	bool Render();
 	bool PrintVKDebugMessages(const char * msg);
+
+	void InitImGui();
 
 private:
 

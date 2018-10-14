@@ -2,7 +2,7 @@
 #include "Globals.h"
 #include "WindowModule.h"
 #include "VulkanModule.h"
-
+#include "Application.h"
 
 RendererModule::RendererModule(const char* module_name, bool game_module) : Module(module_name, game_module)
 {

@@ -10,7 +10,6 @@ class InputModule;
 class RendererModule;
 class FileSystemModule;
 class VulkanModule;
-class Timer;
 class SceneModule;
 class CameraModule;
 class EditorModule;
@@ -40,7 +39,7 @@ public:
 
 	void QuitEngine();
 
-	float GetFPS()const;
+	int GetFPS()const;
 
 	bool IsEditor() const;
 
@@ -76,10 +75,10 @@ private:
 	Timer msTimer;
 	Timer fpsTimer;
 	int	numFps;
-	int	lastFrameMs;
+	float lastFrameMs;
 	int	lastFps;
 	int frames;
-	int cappedMs;
+	float cappedMs;
 
 	bool toStop;
 	bool toPause;

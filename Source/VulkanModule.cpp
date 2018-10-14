@@ -11,6 +11,11 @@
 #include "SceneModule.h"
 #include "GameObject.h"
 #include "CameraModule.h"
+#include <imgui.h>
+#include <imgui_impl_vulkan.h>
+
+#define GLFW_INCLUDE_NONE
+#include <glfw3.h>
 
 std::vector<uint16_t> indices = {
     0, 1, 2, 0, 2, 3
@@ -23,6 +28,15 @@ struct UniformBufferObject {
     glm::mat4 view;
     glm::mat4 proj;
 };
+
+//ImGui
+static void check_vk_result(VkResult err)
+{
+	if (err == 0) return;
+	CONSOLE_ERROR("VkResult %d\n", err);
+	if (err < 0)
+		abort();
+}
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -90,6 +104,10 @@ VulkanModule::VulkanModule(const char* module_name, bool game_module) : Module(m
     vkSurface = VK_NULL_HANDLE;
     vkSwapchain = VK_NULL_HANDLE;
     vkPipelineLayout = VK_NULL_HANDLE;
+	vertexBuffer = VK_NULL_HANDLE;
+	vertexBufferMemory = VK_NULL_HANDLE;
+	indexBuffer = VK_NULL_HANDLE;
+	indexBufferMemory = VK_NULL_HANDLE;
     
 #ifdef NDEBUG
     enableValidationLayers = false;
@@ -137,11 +155,23 @@ bool VulkanModule::CleanUp()
         vkFreeMemory(vkLogicalDevice, uniformBuffersMemory[i], nullptr);
     }
     
-    vkDestroyBuffer(vkLogicalDevice, indexBuffer, nullptr);
-    vkFreeMemory(vkLogicalDevice, indexBufferMemory, nullptr);
+	if(indexBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(vkLogicalDevice, indexBuffer, nullptr);
+	}
+	if (indexBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(vkLogicalDevice, indexBufferMemory, nullptr);
+	}
     
-    vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
-    vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
+	if (vertexBuffer != VK_NULL_HANDLE)
+	{
+		vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
+	}
+	if (vertexBufferMemory != VK_NULL_HANDLE)
+	{
+		vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
+	}
     
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         vkDestroySemaphore(vkLogicalDevice, vkRenderFinishedSemaphores[i], nullptr);
@@ -253,15 +283,12 @@ bool VulkanModule::Render()
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     
     vkQueueWaitIdle(vkPresentationQueue);
-    
+
     return true;
 }
 
 bool VulkanModule::UpdateCommandBuffers()
 {
-    /*vkFreeCommandBuffers(vkLogicalDevice, vkCommandPool, commandBuffers.size(), commandBuffers.data());
-     commandBuffers.resize(swapchainFramebuffers.size());*/
-    
     for (size_t i = 0; i < commandBuffers.size(); i++) {
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -297,15 +324,22 @@ bool VulkanModule::UpdateCommandBuffers()
         
         vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         
-        int count = App->sceneModule->sceneGameObjects.size();
+		std::vector<GameObject*> sceneGameObjects = App->sceneModule->rootGameObject->GetChilds();
+		int count = App->sceneModule->spritesNum;
         if(count > 0)
         {
             vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, vkGraphicsPipeline);
             
             if(App->sceneModule->updateSceneVertices)
             {
-                vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
-                vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
+				if (vertexBuffer != VK_NULL_HANDLE)
+				{
+					vkDestroyBuffer(vkLogicalDevice, vertexBuffer, nullptr);
+				}
+				if (vertexBufferMemory != VK_NULL_HANDLE)
+				{
+					vkFreeMemory(vkLogicalDevice, vertexBufferMemory, nullptr);
+				}
                 CreateVertexBuffer();
                 App->sceneModule->updateSceneVertices = false;
             }
@@ -321,25 +355,32 @@ bool VulkanModule::UpdateCommandBuffers()
             int vertexOffset = 0;
             for(int j = 0; j < count; j++)
             {
-                UniformBufferObject ubo = {};
+				if (sceneGameObjects[j]->GetActive() && sceneGameObjects[j]->GetSprite()->GetActive())
+				{
+					UniformBufferObject ubo = {};
+
+					ubo.view = App->cameraModule->GetViewMatrix();
+					ubo.proj = App->cameraModule->GetOrthoProjection();
+					ubo.model = sceneGameObjects[j]->GetModelMatrix();
+
+					vkCmdPushConstants(
+						commandBuffers[i],
+						vkPipelineLayout,
+						VK_SHADER_STAGE_VERTEX_BIT,
+						0,
+						sizeof(UniformBufferObject),
+						&ubo
+					);
+
+					vkCmdDrawIndexed(commandBuffers[i], static_cast<uint16_t>(indices.size()), 1, 0, vertexOffset, 0);
+				}
                 
-                ubo.view = App->cameraModule->GetViewMatrix();
-                ubo.proj = App->cameraModule->GetOrthoProjection();
-                ubo.model = App->sceneModule->sceneGameObjects[j]->GetModelMatrix();
-                
-                vkCmdPushConstants(
-                                   commandBuffers[i],
-                                   vkPipelineLayout,
-                                   VK_SHADER_STAGE_VERTEX_BIT,
-                                   0,
-                                   sizeof(UniformBufferObject),
-                                   &ubo
-                                   );
-                
-                vkCmdDrawIndexed(commandBuffers[i], static_cast<uint16_t>(indices.size()), 1, 0, vertexOffset, 0);
                 vertexOffset += 4;
             }
         }
+
+		//Draw editor
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffers[i]);
         
         vkCmdEndRenderPass(commandBuffers[i]);
         
@@ -357,7 +398,7 @@ bool VulkanModule::UpdateCommandBuffers()
 
 void VulkanModule::UpdateUniformBuffer(uint32_t imageIndex)
 {
-    UniformBufferObject ubo = {};
+   /* UniformBufferObject ubo = {};
     
     ubo.view = App->cameraModule->GetViewMatrix();
     ubo.proj = App->cameraModule->GetOrthoProjection();
@@ -366,7 +407,7 @@ void VulkanModule::UpdateUniformBuffer(uint32_t imageIndex)
     void* data;
     vkMapMemory(vkLogicalDevice, uniformBuffersMemory[imageIndex], 0, sizeof(ubo), 0, &data);
     memcpy(data, &ubo, sizeof(ubo));
-    vkUnmapMemory(vkLogicalDevice, uniformBuffersMemory[imageIndex]);
+    vkUnmapMemory(vkLogicalDevice, uniformBuffersMemory[imageIndex]);*/
 }
 
 bool VulkanModule::CreateVulkanInstance()
@@ -960,17 +1001,22 @@ bool VulkanModule::CreateSyncObjects()
 bool VulkanModule::CreateVertexBuffer()
 {
     std::vector<Vertex> vertices;
-    std::vector<GameObject*> gos = App->sceneModule->sceneGameObjects;
+    std::vector<GameObject*> gos = App->sceneModule->rootGameObject->GetChilds();
     for(GameObject* go : gos)
     {
-        std::array<Vertex, 4> goVertices = go->GetSprite()->GetVertices();
-        for(Vertex v : goVertices)
-        {
-            vertices.emplace_back(v);
-        }
+		ComponentSprite* sprite = go->GetSprite();
+		if (sprite)
+		{
+			std::array<Vertex, 4> goVertices = sprite->GetVertices();
+			for (Vertex v : goVertices)
+			{
+				vertices.emplace_back(v);
+			}
+		}
     }
-    //std::array<Vertex, 4> vertices = App->sceneModule->sceneGameObjects[0]->GetSprite()->GetVertices();
-    
+
+	if (vertices.empty()) return false;
+        
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
     
     VkBuffer stagingBuffer;
@@ -1002,18 +1048,6 @@ bool VulkanModule::CreateVertexBuffer()
 
 bool VulkanModule::CreateIndexBuffer()
 {
-    /*int index = 0;
-    int count = App->sceneModule->sceneGameObjects.size();
-    for(int i = 0; i < count; i++)
-    {
-        indices.emplace_back(index);
-        indices.emplace_back(index + 1);
-        indices.emplace_back(index + 2);
-        indices.emplace_back(index + 2);
-        indices.emplace_back(index + 3);
-        indices.emplace_back(index);
-        index += 6;
-    }*/
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
     
     VkBuffer stagingBuffer;
@@ -1685,4 +1719,102 @@ bool VulkanModule::PrintVKDebugMessages(const char * msg)
     CONSOLE_ERROR("validation layer: %s", msg);
     
     return VK_FALSE;
+}
+
+void VulkanModule::InitImGui()
+{
+	VkDescriptorPool ImGuiDescriptorPool;
+	VkDescriptorPoolSize pool_sizes[] =
+	{
+		{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+		{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+		{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+	};
+	VkDescriptorPoolCreateInfo pool_info = {};
+	pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+	pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
+	pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+	pool_info.pPoolSizes = pool_sizes;
+	VkResult err = vkCreateDescriptorPool(vkLogicalDevice, &pool_info, nullptr, &ImGuiDescriptorPool);
+	check_vk_result(err);
+
+	VkRenderPass ImGuiRenderPass;
+	VkAttachmentDescription attachment = {};
+	attachment.format = vkSwapchainImageFormat;
+	attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkAttachmentReference color_attachment = {};
+	color_attachment.attachment = 0;
+	color_attachment.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &color_attachment;
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	VkRenderPassCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	info.attachmentCount = 1;
+	info.pAttachments = &attachment;
+	info.subpassCount = 1;
+	info.pSubpasses = &subpass;
+	info.dependencyCount = 1;
+	info.pDependencies = &dependency;
+	err = vkCreateRenderPass(vkLogicalDevice, &info, nullptr, &ImGuiRenderPass);
+	check_vk_result(err);
+
+	// Setup Vulkan binding
+	ImGui_ImplVulkan_InitInfo init_info = {};
+	init_info.Instance = vkInstance;
+	init_info.PhysicalDevice = vkPhysicalDevice;
+	init_info.Device = vkLogicalDevice;
+	init_info.QueueFamily = FindQueueFamilies(vkPhysicalDevice).graphicsIndex.value();
+	init_info.Queue = vkGraphicsQueue;
+	init_info.PipelineCache = VK_NULL_HANDLE;
+	init_info.DescriptorPool = ImGuiDescriptorPool;
+	init_info.Allocator = nullptr;
+	init_info.CheckVkResultFn = check_vk_result;
+	ImGui_ImplVulkan_Init(&init_info, ImGuiRenderPass);
+
+	err = vkResetCommandPool(vkLogicalDevice, vkCommandPool, 0);
+	check_vk_result(err);
+	VkCommandBufferBeginInfo begin_info = {};
+	begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	err = vkBeginCommandBuffer(commandBuffers[0], &begin_info);
+	check_vk_result(err);
+
+	ImGui_ImplVulkan_CreateFontsTexture(commandBuffers[0]);
+
+	VkSubmitInfo end_info = {};
+	end_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	end_info.commandBufferCount = 1;
+	end_info.pCommandBuffers = &commandBuffers[0];
+	err = vkEndCommandBuffer(commandBuffers[0]);
+	check_vk_result(err);
+	err = vkQueueSubmit(vkGraphicsQueue, 1, &end_info, VK_NULL_HANDLE);
+	check_vk_result(err);
+
+	err = vkDeviceWaitIdle(vkLogicalDevice);
+	check_vk_result(err);
+	ImGui_ImplVulkan_InvalidateFontUploadObjects();
 }

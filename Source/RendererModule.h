@@ -1,6 +1,5 @@
 #pragma once
 #include "Module.h"
-#include "Application.h"
 
 class RendererModule :
 	public Module

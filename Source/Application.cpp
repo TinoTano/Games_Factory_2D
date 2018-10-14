@@ -1,5 +1,4 @@
 #include "Application.h"
-//#include "Timer.h"
 #include "Module.h"
 #include "WindowModule.h"
 #include "InputModule.h"
@@ -40,9 +39,9 @@ Application::Application()
 	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
 	modulesList.emplace_back(cameraModule = std::make_shared<CameraModule>("Camera Module"));
 	modulesList.emplace_back(sceneModule = std::make_shared<SceneModule>("Scene Module"));
+	modulesList.emplace_back(editorModule = std::make_shared<EditorModule>("Editor Module"));
 	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
 	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
-    modulesList.emplace_back(editorModule = std::make_shared<EditorModule>("Editor Module"));
 
 	fileSystemModule = std::make_shared<FileSystemModule>("File System Module");
 }
@@ -85,12 +84,15 @@ bool Application::Start()
 		}
 	}
 
+	msTimer.StartTimer();
+	fpsTimer.StartTimer();
+
 	return ret;
 }
 
 bool Application::DoUpdate()
 {
-	deltaTime = msTimer.ReadAsSec();
+	deltaTime = msTimer.ReadAsMS();
 	msTimer.StartTimer();
 
 	bool ret = true;
@@ -115,7 +117,10 @@ bool Application::PreUpdate()
 
 	for (std::shared_ptr<Module> module : modulesList)
 	{
+		Timer t;
+		t.StartTimer();
 		ret = module->PreUpdate(deltaTime);
+		CONSOLE_DEBUG("%s PreUpdate: %.3f", module->GetName(), t.ReadAsMS());
 		
 		if (!ret)
 		{
@@ -133,8 +138,11 @@ bool Application::Update()
 
 	for (std::shared_ptr<Module> module : modulesList)
 	{
+		Timer t;
+		t.StartTimer();
 		ret = module->Update(deltaTime);
-		
+		CONSOLE_DEBUG("%s Update: %.3f", module->GetName(), t.ReadAsMS());
+
 		if (!ret)
 		{
 			CONSOLE_ERROR("Module %s Update() failed", module->GetName());
@@ -151,8 +159,11 @@ bool Application::PostUpdate()
 
 	for (std::shared_ptr<Module> module : modulesList)
 	{
+		Timer t;
+		t.StartTimer();
 		ret = module->PostUpdate(deltaTime);
-		
+		CONSOLE_DEBUG("%s PostUpdate: %.3f", module->GetName(), t.ReadAsMS());
+
 		if (!ret)
 		{
 			CONSOLE_ERROR("Module %s PostUpdate() failed", module->GetName());
@@ -178,7 +189,7 @@ bool Application::PostUpdate()
 
 	lastFrameMs = msTimer.ReadAsMS();
 
-	CONSOLE_DEBUG("FPS: %d", lastFps);
+	//CONSOLE_DEBUG("FPS: %d", lastFps);
 
 	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{
@@ -250,7 +261,7 @@ void Application::QuitEngine()
 	quit = true;
 }
 
-float Application::GetFPS() const
+int Application::GetFPS() const
 {
 	return numFps;
 }
@@ -262,12 +273,12 @@ bool Application::IsEditor() const
 
 void Application::StopNow()
 {
-	engineState == EngineState::OnStop;
+	engineState = EngineState::OnStop;
 	toStop = false;
 }
 
 void Application::PauseNow()
 {
-	engineState == EngineState::OnPause;
+	engineState = EngineState::OnPause;
 	toPause = false;
 }

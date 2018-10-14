@@ -68,21 +68,6 @@ void InputModule::KeyCallback(GLFWwindow * window, int key, int scancode, int ac
 		case GLFW_KEY_R:
 			App->cameraModule->IncreaseZoom(1.10f);
 			break;
-		case GLFW_KEY_T:
-			App->cameraModule->IncreaseRotation(5.0f);
-			break;
-		case GLFW_KEY_O:
-			//App->sceneModule->sceneGameObjects[0]->IncreaseScale(1.1f, 0.0f);
-			//App->sceneModule->sceneGameObjects[0]->SetScale(1.1f, 1.0f);
-			App->sceneModule->sceneGameObjects[0]->IncreasePosition(1, 0);
-			break;
-		case GLFW_KEY_P:
-			App->sceneModule->sceneGameObjects[0]->IncreaseScale(-1.1f, 0.0f);
-			//App->sceneModule->sceneGameObjects[0]->SetScale(0.9f, 1.0f);
-			break;
-		case GLFW_KEY_L:
-			App->sceneModule->CreateNewObject(nullptr);
-			break;
 		}
 	}
 }

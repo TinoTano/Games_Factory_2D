@@ -1,5 +1,4 @@
-#ifndef EditorWindow_h
-#define EditorWindow_h
+#pragma once
 
 class EditorWindow
 {
@@ -18,5 +17,3 @@ protected:
     const char* windowName;
     bool enabled;
 };
-
-#endif /* EditorWindow_h */

@@ -1,7 +1,10 @@
-#ifndef InspectorWindow_h
-#define InspectorWindow_h
-
+#pragma once
 #include "EditorWindow.h"
+#include <imgui.h>
+
+class GameObject;
+class ComponentTransform;
+class ComponentSprite;
 
 class InspectorWindow : public EditorWindow
 {
@@ -10,6 +13,18 @@ public:
     ~InspectorWindow();
     
     void DrawWindow();
-};
+	
+	void SetSelectedGameObject(GameObject* go);
 
-#endif /* InspectorWindow_h */
+private:
+	void DrawInfo(GameObject& go);
+	void DrawTransform(ComponentTransform& transform);
+	void DrawSprite(ComponentSprite& transform);
+
+	void ShowAddComponentWindow();
+
+private:
+	GameObject* selectecGameObject;
+	bool showAddComponentsWindow;
+	ImVec2 addComponentsWindowPos;
+};

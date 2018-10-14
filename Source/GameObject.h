@@ -10,7 +10,7 @@ class ComponentSprite;
 class GameObject
 {
 public:
-	GameObject();
+	GameObject(std::string name, GameObject* parent = nullptr);
 	~GameObject();
 
 	void SetParent(GameObject& parent);
@@ -27,6 +27,19 @@ public:
 	ComponentSprite* GetSprite() const;
 	glm::mat4 GetModelMatrix() const;
 
+	std::vector<Component*> GetComponents();
+	void AddComponent(Component::COMPONENT_TYPE type);
+
+	std::vector<GameObject*> GetChilds() const;
+	void AddChild(GameObject* gameObject);
+	void RemoveChild(GameObject* gameObject);
+
+	void SetName(const char* name);
+	std::string GetName() const;
+
+	void SetActive(bool active);
+	bool GetActive() const;
+
 private:
 	Component* GetComponentOfType(Component::COMPONENT_TYPE type) const;
 	std::vector<Component*> GetComponentsOfType(Component::COMPONENT_TYPE type) const;
@@ -34,5 +47,8 @@ private:
 private:
 	GameObject* parent;
 	std::vector<Component*> components;
+	std::vector<GameObject*> childs;
+	std::string name;
+	bool active;
 };
 

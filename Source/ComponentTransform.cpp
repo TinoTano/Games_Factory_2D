@@ -24,17 +24,10 @@ ComponentTransform::~ComponentTransform()
 void ComponentTransform::SetPosition(glm::vec2 position)
 {
 	GameObject* parent = gameObject->GetParent();
+	prevPos = localPosition;
 
-	if (parent != nullptr)
-	{
-		localPosition = position;
-		globalPosition = position + parent->GetTransform()->GetGlobalPosition();
-	}
-	else
-	{
-		localPosition = position;
-		globalPosition = position;
-	}
+	localPosition = position;
+	globalPosition = position + parent->GetTransform()->GetGlobalPosition();
 
 	glm::vec2 diff = localPosition - prevPos;
 
@@ -43,7 +36,6 @@ void ComponentTransform::SetPosition(glm::vec2 position)
 
 void ComponentTransform::IncreasePosition(glm::vec2 increase)
 {
-	prevPos = localPosition;
 	localPosition += increase;
 	SetPosition(localPosition);
 }
@@ -81,20 +73,12 @@ float ComponentTransform::GetGlobalPositionY() const
 void ComponentTransform::SetRotation(float angle)
 {
 	GameObject* parent = gameObject->GetParent();
+	prevRot = localRotation;
 
-	if (parent != nullptr)
-	{
-		localRotation = angle;
-		globalRotation = localRotation + parent->GetTransform()->GetGlobalRotation();
-	}
-	else
-	{
-		localRotation = angle;
-		globalRotation = angle;
-	}
+	localRotation = angle;
+	globalRotation = localRotation + parent->GetTransform()->GetGlobalRotation();
 
 	float diff = localRotation - prevRot;
-	CONSOLE_LOG("%.3f", diff);
 
 	modelMatrix = glm::translate(modelMatrix, glm::vec3(-globalPosition.x, -globalPosition.y, 0.0f));
 	modelMatrix = glm::rotate(modelMatrix, glm::radians(diff), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -103,7 +87,6 @@ void ComponentTransform::SetRotation(float angle)
 
 void ComponentTransform::IncreaseRotation(float angle)
 {
-	prevRot = localRotation;
 	localRotation += angle;
 	SetRotation(localRotation);
 }
@@ -122,16 +105,8 @@ void ComponentTransform::SetScale(glm::vec2 scale)
 {
 	GameObject* parent = gameObject->GetParent();
 
-	if (parent != nullptr)
-	{
-		localScale = scale;
-		globalScale = localScale + parent->GetTransform()->GetGlobalScale();
-	}
-	else
-	{
-		localScale = scale;
-		globalScale = scale;
-	}
+	localScale = scale;
+	globalScale = localScale + parent->GetTransform()->GetGlobalScale();
 
 	glm::vec2 origin(0, 0);
 
@@ -149,7 +124,7 @@ void ComponentTransform::SetScale(glm::vec2 scale)
 		-sxs, syc, ty,
 		0.f, 0.f, 1.f)));
 
-	glm::vec2 diff = localScale - prevScale;
+	//glm::vec2 diff = localScale - prevScale;
 	/*diff.x = 1 * diff.x;
 	diff.y = 1 * diff.y;*/
 	//CONSOLE_LOG("%.3f, %.3f", diff.x, diff.y);
