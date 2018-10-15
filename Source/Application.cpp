@@ -120,7 +120,7 @@ bool Application::PreUpdate()
 		Timer t;
 		t.StartTimer();
 		ret = module->PreUpdate(deltaTime);
-		CONSOLE_DEBUG("%s PreUpdate: %.3f", module->GetName(), t.ReadAsMS());
+		//CONSOLE_DEBUG("%s PreUpdate: %.3f", module->GetName(), t.ReadAsMS());
 		
 		if (!ret)
 		{
@@ -141,7 +141,7 @@ bool Application::Update()
 		Timer t;
 		t.StartTimer();
 		ret = module->Update(deltaTime);
-		CONSOLE_DEBUG("%s Update: %.3f", module->GetName(), t.ReadAsMS());
+		//CONSOLE_DEBUG("%s Update: %.3f", module->GetName(), t.ReadAsMS());
 
 		if (!ret)
 		{
@@ -162,7 +162,7 @@ bool Application::PostUpdate()
 		Timer t;
 		t.StartTimer();
 		ret = module->PostUpdate(deltaTime);
-		CONSOLE_DEBUG("%s PostUpdate: %.3f", module->GetName(), t.ReadAsMS());
+		//CONSOLE_DEBUG("%s PostUpdate: %.3f", module->GetName(), t.ReadAsMS());
 
 		if (!ret)
 		{
@@ -189,14 +189,14 @@ bool Application::PostUpdate()
 
 	lastFrameMs = msTimer.ReadAsMS();
 
-	//CONSOLE_DEBUG("FPS: %d", lastFps);
+	CONSOLE_DEBUG("FPS: %d", lastFps);
 
 	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{
 #ifdef _WIN32
 		Sleep(cappedMs - lastFrameMs);
 #else
-        std::this_thread::sleep_for(std::chrono::milliseconds(cappedMs - lastFrameMs));
+        std::this_thread::sleep_for(std::chrono::milliseconds((int)cappedMs - (int)lastFrameMs));
 #endif
 	}
 

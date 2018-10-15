@@ -26,7 +26,7 @@ bool EditorModule::Start()
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGui_ImplGlfw_InitForVulkan(App->windowModule->engineWindow, false);
+	ImGui_ImplGlfw_InitForVulkan(App->windowModule->engineWindow, true);
 	ImGui::StyleColorsDark();
 	App->vulkanModule->InitImGui();
 

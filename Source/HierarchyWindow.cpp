@@ -35,7 +35,14 @@ void HierarchyWindow::DrawWindow()
 	{
 		ShowGameObjectOptions();
 	}
-	
+    if(ImGui::IsMouseClicked(0))
+    {
+        if(!ImGui::IsAnyItemHovered() && ImGui::IsWindowFocused())
+        {
+            selectedGameObject = nullptr;
+            App->editorModule->inspectorWindow->SetSelectedGameObject(nullptr);
+        }
+    }
 	ImGui::End();
 }
 

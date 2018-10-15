@@ -1,6 +1,4 @@
-#ifndef EditorModule_h
-#define EditorModule_h
-
+#pragma once
 #include "Module.h"
 #include <vector>
 
@@ -26,5 +24,3 @@ public:
 private:
     std::vector<EditorWindow*> editorWindows;
 };
-
-#endif /* EditorModule_h */

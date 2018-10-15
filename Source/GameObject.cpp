@@ -134,12 +134,12 @@ void GameObject::AddComponent(Component::COMPONENT_TYPE type)
 	switch (type)
 	{
 	case Component::TRANSFORM:
-		CONSOLE_ERROR("GameObjects cannot have more than 1 transform component");
+		CONSOLE_ERROR("GameObjects cannot have more than 1 transform component", NULL);
 		break;
 	case Component::SPRITE:
 		if (GetSprite() != nullptr)
 		{
-			CONSOLE_ERROR("GameObjects cannot have more than 1 sprite component");
+			CONSOLE_ERROR("GameObjects cannot have more than 1 sprite component", NULL);
 		}
 		else
 		{

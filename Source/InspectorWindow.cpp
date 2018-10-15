@@ -8,7 +8,8 @@
 
 InspectorWindow::InspectorWindow(const char* windowName, bool enabled) : EditorWindow(windowName, enabled)
 {
-    
+    selectecGameObject = nullptr;
+    showAddComponentsWindow = false;
 }
 
 InspectorWindow::~InspectorWindow()
@@ -63,7 +64,11 @@ void InspectorWindow::SetSelectedGameObject(GameObject * go)
 
 void InspectorWindow::DrawInfo(GameObject & go)
 {
-	ImGui::Text("%s", go.GetName().c_str());
+    char* name = strdup(go.GetName().c_str());
+    if(ImGui::InputText("Name", name, go.GetName().size() + 1, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+    {
+        go.SetName(name);
+    }
 
 	bool active = go.GetActive();
 	if (ImGui::Checkbox("Active", &active))

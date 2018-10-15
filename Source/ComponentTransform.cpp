@@ -104,11 +104,13 @@ float ComponentTransform::GetGlobalRotation() const
 void ComponentTransform::SetScale(glm::vec2 scale)
 {
 	GameObject* parent = gameObject->GetParent();
+    
+    prevScale = localScale;
 
 	localScale = scale;
 	globalScale = localScale + parent->GetTransform()->GetGlobalScale();
 
-	glm::vec2 origin(0, 0);
+	/*glm::vec2 origin(0,0);
 
 	float angle = -globalRotation * 3.141592654f / 180.f;
 	float cosine = static_cast<float>(std::cos(angle));
@@ -122,18 +124,17 @@ void ComponentTransform::SetScale(glm::vec2 scale)
 
 	modelMatrix = glm::mat4((glm::mat3(sxc, sys, tx,
 		-sxs, syc, ty,
-		0.f, 0.f, 1.f)));
+		0.f, 0.f, 1.f)));*/
 
-	//glm::vec2 diff = localScale - prevScale;
-	/*diff.x = 1 * diff.x;
-	diff.y = 1 * diff.y;*/
+	glm::vec2 diff = localScale - prevScale;
+	diff.x = 1 + diff.x;
+	diff.y = 1 + diff.y;
 	//CONSOLE_LOG("%.3f, %.3f", diff.x, diff.y);
-	//modelMatrix = glm::scale(modelMatrix, glm::vec3(globalScale, 1.0f));
+	modelMatrix = glm::scale(modelMatrix, glm::vec3(diff, 1.0f));
 }
 
 void ComponentTransform::IncreaseScale(glm::vec2 increase)
 {
-	prevScale = localScale;
 	localScale += increase;
 	SetScale(localScale);
 }
