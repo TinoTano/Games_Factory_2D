@@ -64,7 +64,11 @@ void InspectorWindow::SetSelectedGameObject(GameObject * go)
 
 void InspectorWindow::DrawInfo(GameObject & go)
 {
-    char* name = strdup(go.GetName().c_str());
+#ifdef _WIN32
+	char* name = _strdup(go.GetName().c_str());
+#else
+	char* name = strdup(go.GetName().c_str());
+#endif
     if(ImGui::InputText("Name", name, go.GetName().size() + 1, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
     {
         go.SetName(name);
@@ -81,31 +85,37 @@ void InspectorWindow::DrawInfo(GameObject & go)
 
 void InspectorWindow::DrawTransform(ComponentTransform & transform)
 {
-	glm::vec2 pos = transform.GetLocalPosition();
-	if (ImGui::DragFloat2("Position", (float*)&pos, 0.25f))
+	if (ImGui::CollapsingHeader("Transform", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		transform.SetPosition(pos);
-	}
+		glm::vec2 pos = transform.GetLocalPosition();
+			if (ImGui::DragFloat2("Position", (float*)&pos, 0.25f))
+			{
+				transform.SetPosition(pos);
+			}
 
-	float rot = transform.GetLocalRotation();
-	if (ImGui::DragFloat("Rotation", &rot, 0.25f))
-	{
-		transform.SetRotation(rot);
-	}
+		float rot = transform.GetLocalRotation();
+			if (ImGui::DragFloat("Rotation", &rot, 0.25f))
+			{
+				transform.SetRotation(rot);
+			}
 
-	glm::vec2 scale = transform.GetLocalScale();
-	if (ImGui::DragFloat2("Scale", (float*)&scale, 0.25f))
-	{
-		transform.SetScale(scale);
+		glm::vec2 scale = transform.GetLocalScale();
+		if (ImGui::DragFloat2("Scale", (float*)&scale, 0.25f))
+		{
+			transform.SetScale(scale);
+		}
 	}
 }
 
 void InspectorWindow::DrawSprite(ComponentSprite & transform)
 {
-	bool active = transform.GetActive();
-	if (ImGui::Checkbox("Active##ComponentSprite", &active))
+	if (ImGui::CollapsingHeader("Sprite", ImGuiTreeNodeFlags_DefaultOpen))
 	{
-		transform.SetActive(active);
+		bool active = transform.GetActive();
+		if (ImGui::Checkbox("Active##ComponentSprite", &active))
+		{
+			transform.SetActive(active);
+		}
 	}
 }
 
