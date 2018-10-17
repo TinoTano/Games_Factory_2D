@@ -5,6 +5,7 @@
 class InspectorWindow;
 class EditorWindow;
 class HierarchyWindow;
+class AssetsWindow;
 
 class EditorModule : public Module
 {
@@ -20,6 +21,7 @@ public:
 public:
     InspectorWindow* inspectorWindow;
 	HierarchyWindow* hierarchyWindow;
+	AssetsWindow* assetsWindow;
     
 private:
     std::vector<EditorWindow*> editorWindows;

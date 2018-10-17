@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
+#include "AssetsWindow.h"
 
 EditorModule::EditorModule(const char* moduleName, bool gameModule) : Module(moduleName, gameModule)
 {
@@ -20,9 +21,10 @@ EditorModule::~EditorModule()
 
 bool EditorModule::Start()
 {
-	editorWindows.reserve(2);
+	editorWindows.reserve(3);
 	editorWindows.emplace_back(inspectorWindow = new InspectorWindow("Inspector Window"));
 	editorWindows.emplace_back(hierarchyWindow = new HierarchyWindow("Hierarchy Window"));
+	editorWindows.emplace_back(assetsWindow = new AssetsWindow("Assets Window"));
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
