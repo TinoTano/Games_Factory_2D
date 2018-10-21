@@ -13,6 +13,8 @@ public:
 	float ReadAsMS() const;
 	float ReadAsSec() const;
 
+	long long GetCurrentTime() const;
+
 private:
 	std::chrono::time_point<std::chrono::high_resolution_clock> start_time;
 };

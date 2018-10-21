@@ -27,3 +27,8 @@ float Timer::ReadAsSec() const
 
 	return std::chrono::duration<float, std::chrono::seconds::period>(read_time - start_time).count();
 }
+
+long long Timer::GetCurrentTime() const
+{
+	return std::chrono::high_resolution_clock::now().time_since_epoch().count();
+}

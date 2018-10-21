@@ -6,11 +6,11 @@ class Resource
 public:
 	enum ResourceType
 	{
-		RESOURCE_NONE, RESOURCE_TEXTURE
+		RESOURCE_NONE, RESOURCE_TEXTURE, RESOURCE_SCENE
 	};
 
 	Resource();
-	Resource(std::string name, std::string assets_path, std::string library_path, ResourceType type);
+	Resource(std::string name, std::string assetsPath, std::string libraryPath, ResourceType type);
 	~Resource();
 
 	std::string GetUID() const;
@@ -35,11 +35,11 @@ public:
 	void CreateMeta();
 
 private:
-	ResourceType res_type;
+	ResourceType resType;
 	std::string UID;
 	std::string name;
-	std::string assets_path;
-	std::string library_path;
-	int used_count;
+	std::string assetsPath;
+	std::string libraryPath;
+	int usedCount;
 };
 

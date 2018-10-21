@@ -3,6 +3,8 @@
 #include "ComponentTransform.h"
 #include "ComponentSprite.h"
 #include "Globals.h"
+#include "Application.h"
+#include "FileSystemModule.h"
 
 GameObject::GameObject(std::string name, GameObject* parent) : name(name)
 {
@@ -13,6 +15,8 @@ GameObject::GameObject(std::string name, GameObject* parent) : name(name)
 		SetParent(*parent);
 	}
 	active = true;
+
+	UID = App->fileSystemModule->CreateUID();
 }
 
 GameObject::~GameObject()
@@ -184,4 +188,9 @@ void GameObject::SetActive(bool active)
 bool GameObject::GetActive() const
 {
 	return active;
+}
+
+std::string GameObject::GetUID() const
+{
+	return UID;
 }

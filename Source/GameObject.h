@@ -40,6 +40,8 @@ public:
 	void SetActive(bool active);
 	bool GetActive() const;
 
+	std::string GetUID() const;
+
 private:
 	Component* GetComponentOfType(Component::COMPONENT_TYPE type) const;
 	std::vector<Component*> GetComponentsOfType(Component::COMPONENT_TYPE type) const;
@@ -50,5 +52,6 @@ private:
 	std::vector<GameObject*> childs;
 	std::string name;
 	bool active;
+	std::string UID;
 };
 

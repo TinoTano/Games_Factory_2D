@@ -1,22 +1,17 @@
 #include "Resource.h"
 #include <fstream>
 #include <ctime>
-#include "md5.h"
+#include "FileSystemModule.h"
+#include "Application.h"
 
 Resource::Resource()
 {
 }
 
-Resource::Resource(std::string name, std::string assets_path, std::string library_path, ResourceType type) :
-	name(name), assets_path(assets_path), library_path(library_path), res_type(type), used_count(0)
+Resource::Resource(std::string name, std::string assetsPath, std::string libraryPath, ResourceType type) :
+	name(name), assetsPath(assetsPath), libraryPath(libraryPath), resType(type), usedCount(0)
 {
-	unsigned int size = sizeof(this);
-	char* data = new char[size];
-	memcpy(data, this, size);
-
-	UID = md5(data);
-
-	delete[] data;
+	UID = App->fileSystemModule->CreateUID();
 }
 
 Resource::~Resource()
@@ -45,48 +40,48 @@ void Resource::SetName(std::string name)
 
 std::string Resource::GetAssetsPath() const
 {
-	return assets_path;
+	return assetsPath;
 }
 
 void Resource::SetAssetsPath(std::string path)
 {
-	assets_path = path;
+	assetsPath = path;
 }
 
 std::string Resource::GetLibraryPath() const
 {
-	return library_path;
+	return libraryPath;
 }
 
 void Resource::SetLibraryPath(std::string path)
 {
-	library_path = path;
+	libraryPath = path;
 }
 
 Resource::ResourceType Resource::GetType() const
 {
-	return res_type;
+	return resType;
 }
 
 void Resource::SetType(ResourceType type)
 {
-	res_type = type;
+	resType = type;
 }
 
 void Resource::IncreaseUsedCount()
 {
-	used_count++;
+	usedCount++;
 }
 
 void Resource::DecreaseUsedCount()
 {
-	if (used_count > 0)
-		used_count--;
+	if (usedCount > 0)
+		usedCount--;
 }
 
 int Resource::GetUsedCount() const
 {
-	return used_count;
+	return usedCount;
 }
 
 void Resource::CreateMeta()
@@ -97,9 +92,9 @@ void Resource::CreateMeta()
 	std::string file_content;
 	file_content += "UID: " + UID + "\n";
 	file_content += std::to_string(now) + "\n";
-	file_content += "Library Path: " + library_path;
+	file_content += "Library Path: " + libraryPath;
 
-	std::ofstream output_file(assets_path + ".meta");
+	std::ofstream output_file(assetsPath + ".meta");
 	output_file << file_content;
 	output_file.close();
 }

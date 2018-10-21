@@ -21,6 +21,5 @@ private:
 	GameObject* selectedGameObject;
 	bool showGameObjectOptions;
 	ImVec2 optionsWindowPos;
-	int nodeNum;
 };
 

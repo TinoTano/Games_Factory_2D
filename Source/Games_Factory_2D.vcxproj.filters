@@ -120,7 +120,13 @@
     <ClCompile Include="HierarchyWindow.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="AssetsWindow.cpp" />
+    <ClCompile Include="Data.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetsWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourcesManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -220,6 +226,12 @@
     <ClInclude Include="HierarchyWindow.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="AssetsWindow.h" />
+    <ClInclude Include="Data.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetsWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourcesManager.h" />
   </ItemGroup>
 </Project>

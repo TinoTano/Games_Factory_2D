@@ -9,13 +9,8 @@
 #include "SceneModule.h"
 #include "CameraModule.h"
 #include "EditorModule.h"
-
-#ifdef _WIN32
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#else
 #include <thread>
-#endif
+#include "md5.h"
 
 Application::Application()
 {
@@ -34,16 +29,15 @@ Application::Application()
 
 	engineState = EngineState::OnStop;
 
-	modulesList.reserve(7);
+	modulesList.reserve(8);
 	modulesList.emplace_back(windowModule = std::make_shared<WindowModule>("Window Module"));
+	modulesList.emplace_back(fileSystemModule = std::make_shared<FileSystemModule>("File System Module"));
 	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
 	modulesList.emplace_back(cameraModule = std::make_shared<CameraModule>("Camera Module"));
 	modulesList.emplace_back(sceneModule = std::make_shared<SceneModule>("Scene Module"));
 	modulesList.emplace_back(editorModule = std::make_shared<EditorModule>("Editor Module"));
 	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
 	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
-
-	fileSystemModule = std::make_shared<FileSystemModule>("File System Module");
 }
 
 Application::~Application()
@@ -189,15 +183,11 @@ bool Application::PostUpdate()
 
 	lastFrameMs = msTimer.ReadAsMS();
 
-	CONSOLE_DEBUG("FPS: %d", lastFps);
+	//CONSOLE_DEBUG("FPS: %d", lastFps);
 
 	if (cappedMs > 0 && lastFrameMs < cappedMs)
 	{
-#ifdef _WIN32
-		Sleep(cappedMs - lastFrameMs);
-#else
-        std::this_thread::sleep_for(std::chrono::milliseconds((int)cappedMs - (int)lastFrameMs));
-#endif
+		std::this_thread::sleep_for(std::chrono::milliseconds((int)cappedMs - (int)lastFrameMs));
 	}
 
 	return ret;

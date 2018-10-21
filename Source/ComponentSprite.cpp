@@ -7,12 +7,17 @@
 ComponentSprite::ComponentSprite(GameObject& gameObject, const char* componentName, COMPONENT_TYPE type) :
 	Component(gameObject, componentName, type)
 {
-    vertices[0].pos = { 0.0f, 0.0f };
-	vertices[1].pos = { 10.0f, 0.0f };
-	vertices[2].pos = { 10.0f, 10.0f };
-	vertices[3].pos = { 0.0f, 10.0f };
+    vertices[0].pos = { -0.5f, -0.5f };
+	vertices[1].pos = { 0.5f, -0.5f };
+	vertices[2].pos = { 0.5f, 0.5f };
+	vertices[3].pos = { -0.5f, 0.5f };
 
 	vertices[0].color = vertices[1].color = vertices[2].color = vertices[3].color = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	vertices[0].texCoord = { 1.0f, 0.0f };
+	vertices[1].texCoord = { 0.0f, 0.0f };
+	vertices[2].texCoord = { 0.0f, 1.0f };
+	vertices[3].texCoord = { 1.0f, 1.0f };
 
 	SetPivot((vertices[0].pos.x + vertices[1].pos.x + vertices[2].pos.x + vertices[3].pos.x) / 3,
 		(vertices[0].pos.y + vertices[1].pos.y + vertices[2].pos.y + vertices[3].pos.y) / 3);

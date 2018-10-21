@@ -1,25 +1,8 @@
 #pragma once
 #include "EditorWindow.h"
-#include <vector>
+#include <string>
 
-struct File
-{
-	enum FileType
-	{
-		SPRITE, SCENE
-	};
-	std::string name;
-	std::string path;
-	FileType type;
-};
-
-struct Directory
-{
-	std::string name;
-	std::string path;
-	std::vector<Directory> subDirectories;
-	std::vector<File> files;
-};
+struct Directory;
 
 class AssetsWindow :
 	public EditorWindow
@@ -29,10 +12,20 @@ public:
 	~AssetsWindow();
 
 	void DrawWindow();
+	void FillSubDirectoriesRecursively(Directory& dir);
+	void CheckDirectories();
 
-	void FillSubDirectoriesRecursively(Directory dir);
+private:
+	void DrawMenuBar();
+	void DrawDirectories(Directory& directory);
+	void DrawFolderContents(Directory& dir);
+	void OpenWindowsFolder(const char* path);
+	void OpenAssetsOptions(const char* assetPath);
 
 private:
 	Directory* assetsDirectory;
+	Directory* currentDirectory;
+	std::string currentAssetsPath;
+	std::string selectedAssetPath;
 };
 

@@ -2,10 +2,8 @@
 #include "Application.h"
 #include "WindowModule.h"
 #include "CameraModule.h"
-#include "Globals.h"
-
-#include "SceneModule.h"
-#include "GameObject.h"
+#include "EditorModule.h"
+#include "AssetsWindow.h"
 
 #define GLFW_INCLUDE_NONE
 #include <glfw3.h>
@@ -24,6 +22,7 @@ bool InputModule::Start()
 {
 	glfwSetKeyCallback(App->windowModule->engineWindow, InputModule::KeyCallback);
 	glfwSetScrollCallback(App->windowModule->engineWindow, InputModule::ScrollCallback);
+	glfwSetWindowFocusCallback(App->windowModule->engineWindow, InputModule::WindowFocusCallback);
 
 	return true;
 }
@@ -81,6 +80,17 @@ void InputModule::ScrollCallback(GLFWwindow * window, double xoffset, double yof
 	else
 	{
 		App->cameraModule->IncreaseZoom(0.01f);
+	}
+}
+
+void InputModule::WindowFocusCallback(GLFWwindow * window, int focused)
+{
+	if (focused == 1)
+	{
+		if (App->IsEditor())
+		{
+			App->editorModule->assetsWindow->CheckDirectories();
+		}
 	}
 }
 

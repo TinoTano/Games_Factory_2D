@@ -146,6 +146,7 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="ComponentSprite.cpp" />
     <ClCompile Include="ComponentTransform.cpp" />
+    <ClCompile Include="Data.cpp" />
     <ClCompile Include="EditorModule.cpp" />
     <ClCompile Include="FileSystemModule.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -157,6 +158,7 @@
     <ClCompile Include="RendererModule.cpp" />
     <ClCompile Include="Resource.cpp" />
     <ClCompile Include="ResourceManagerModule.cpp" />
+    <ClCompile Include="ResourcesManager.cpp" />
     <ClCompile Include="SceneModule.cpp" />
     <ClCompile Include="HierarchyWindow.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -178,6 +180,7 @@
     <ClInclude Include="Component.h" />
     <ClInclude Include="ComponentSprite.h" />
     <ClInclude Include="ComponentTransform.h" />
+    <ClInclude Include="Data.h" />
     <ClInclude Include="EditorModule.h" />
     <ClInclude Include="EditorWindow.h" />
     <ClInclude Include="FileSystemModule.h" />
@@ -190,6 +193,7 @@
     <ClInclude Include="RendererModule.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ResourceManagerModule.h" />
+    <ClInclude Include="ResourcesManager.h" />
     <ClInclude Include="SceneModule.h" />
     <ClInclude Include="HierarchyWindow.h" />
     <ClInclude Include="Texture.h" />

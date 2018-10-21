@@ -10,7 +10,6 @@ HierarchyWindow::HierarchyWindow(const char* windowName, bool enabled) : EditorW
 {
 	selectedGameObject = nullptr;
 	showGameObjectOptions = false;
-	nodeNum = 0;
 }
 
 HierarchyWindow::~HierarchyWindow()
@@ -19,7 +18,6 @@ HierarchyWindow::~HierarchyWindow()
 
 void HierarchyWindow::DrawWindow()
 {
-	nodeNum = 0;
 	ImGui::Begin("Hierarchy");
 	if (ImGui::Button("Create GameObject"))
 	{
@@ -28,6 +26,7 @@ void HierarchyWindow::DrawWindow()
 	std::vector<GameObject*> childs = App->sceneModule->rootGameObject->GetChilds();
 	for (GameObject* go : childs)
 	{
+		if (ImGui::GetItemRectMax().y > ImGui::GetWindowPos().y + ImGui::GetWindowSize().y) break;
 		DrawNodes(go);
 	}
 
@@ -61,7 +60,6 @@ void HierarchyWindow::ShowGameObjectOptions()
 
 void HierarchyWindow::DrawNodes(GameObject * gameObject)
 {
-	nodeNum++;
 	uint32_t flags = 0;
 	if (gameObject->GetChilds().empty())
 	{
