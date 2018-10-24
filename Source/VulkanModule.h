@@ -4,6 +4,8 @@
 #include <optional>
 #include <vulkan/vulkan.h>
 
+class Texture;
+
 class VulkanModule : public Module
 {
 public:
@@ -36,6 +38,11 @@ public:
 	bool PrintVKDebugMessages(const char * msg);
 
 	void InitImGui();
+	void CreateTexture(Texture& texture, void* pixels);
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+	void DestroyTexture(Texture& texture);
 
 private:
 
@@ -111,8 +118,6 @@ private:
 	VkCommandBuffer BeginSingleTimeCommands();
 
 	void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
-
-	bool CreateImage(uint32_t width, uint32_t height, uint32_t mipLevels, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 
 	void RecreateSwapChain(VkSwapchainKHR swapChain);
 	void CleanupSwapChain(VkSwapchainKHR swapCshain);

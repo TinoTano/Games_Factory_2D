@@ -208,6 +208,11 @@ std::string FileSystemModule::CreateUID()
 	return md5(std::to_string(t.GetCurrentTime()));
 }
 
+bool FileSystemModule::FileExist(std::string path)
+{
+	return fs::exists(path);
+}
+
 File::FileType FileSystemModule::GetFileType(std::string extension) const
 {
 	File::FileType type;

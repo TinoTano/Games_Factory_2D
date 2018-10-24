@@ -1,9 +1,5 @@
 #pragma once
 #include "Resource.h"
-#include <vec2.hpp>
-#include <vec3.hpp>
-#include <vulkan/vulkan.h>
-#include <vector>
 
 class Texture :
 	public Resource
@@ -16,17 +12,19 @@ public:
 
 	uint32_t GetWidth() const;
 	uint32_t GetHeight() const;
-	uint8_t* GetData() const;
+	//uint8_t* GetData() const;
+	uint32_t GetMipMapLevels() const;
+
+public:
+	uint64_t textureImage;
+	uint64_t textureImageMemory;
+	uint64_t textureImageView;
+	uint64_t textureSampler;
 
 private:
 	uint32_t width;
 	uint32_t height;
-	uint8_t* textureData;
+	//uint8_t* textureData;
 	uint32_t mipmapLevels;
-
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
-	VkSampler textureSampler;
 };
 

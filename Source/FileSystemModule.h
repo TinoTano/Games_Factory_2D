@@ -45,6 +45,7 @@ public:
 	void CreateDirectory(std::string path);
 	void Delete(std::string path);
 	std::string CreateUID();
+	bool FileExist(std::string path);
 
 private:
 	File::FileType GetFileType(std::string extension) const;
