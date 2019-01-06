@@ -1,51 +1,56 @@
 #include "Texture.h"
-#include "ThirdParty/gli/gli.hpp"
 #include "Application.h"
 #include "FileSystemModule.h"
 #include "VulkanModule.h"
 
-Texture::Texture()
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+
+Texture::Texture(std::string name, std::string assetsPath, std::string fullPath) : 
+	Resource(name, assetsPath, fullPath, Resource::RESOURCE_TEXTURE)
 {
+	width = 0;
+	height = 0;
+	mipmapLevels = 0;
+	textureIndex = 0;
+	textureImage = 0;
+	textureImageMemory = 0;
+	textureImageView = 0;
+	textureSampler = 0;
 }
 
 Texture::~Texture()
 {
 }
 
-bool Texture::LoadFromFile(const char * filePath)
+bool Texture::LoadFromFile(std::string filePath)
 {
 	bool ret = false;
 
 	if (App->fileSystemModule->FileExist(filePath))
 	{
-		gli::texture2d texture(gli::load(filePath));
-		width = texture.extent().x;
-		height = texture.extent().y;
-		mipmapLevels = texture.levels();
-		App->vulkanModule->CreateTexture(*this, texture.data());
-		texture.clear();
-		ret = true;
+		stbi_uc* pixels = stbi_load(filePath.c_str(), &width, &height, &mipmapLevels, STBI_rgb_alpha);
+		if (pixels != nullptr)
+		{
+			App->vulkanModule->CreateTexture(*this, pixels);
+			ret = true;
+		}
 	}
 
 	return ret;
 }
 
-uint32_t Texture::GetWidth() const
+int Texture::GetWidth() const
 {
 	return width;
 }
 
-uint32_t Texture::GetHeight() const
+int Texture::GetHeight() const
 {
 	return height;
 }
 
-uint8_t * Texture::GetData() const
-{
-	return textureData;
-}
-
-uint32_t Texture::GetMipMapLevels() const
+int Texture::GetMipMapLevels() const
 {
 	return mipmapLevels;
 }

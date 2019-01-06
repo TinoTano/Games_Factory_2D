@@ -39,8 +39,6 @@ public:
 
 	void InitImGui();
 	void CreateTexture(Texture& texture, void* pixels);
-	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 	void DestroyTexture(Texture& texture);
 
@@ -79,6 +77,8 @@ private:
 	bool CheckValidationLayerSupport();
 
 	bool CreateVertexBuffer();
+
+	bool CreateDebugVertexBuffer();
 
 	bool CreateIndexBuffer();
 
@@ -124,6 +124,11 @@ private:
 
 	void PrintVkResults(VkResult result);
 
+	void UpdateDescriptorSets();
+
+	void TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
 private:
 	//The instance is the connection between your application and the Vulkan library
 	VkInstance vkInstance;
@@ -162,6 +167,7 @@ private:
 	VkDescriptorSetLayout vkDescriptorSetLayout;
 	VkPipelineLayout vkPipelineLayout;
 	VkPipeline vkGraphicsPipeline;
+	VkPipeline vkDebugPipeline;
 	VkCommandPool vkCommandPool;
 
 	bool enableValidationLayers;
@@ -176,6 +182,7 @@ private:
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
 	std::vector<VkDescriptorSet> descriptorSets;
+	std::vector<VkDescriptorImageInfo> samplerDescriptors;
 
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
@@ -183,6 +190,12 @@ private:
 
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
+	VkDeviceSize vertexBufferSize;
+
+	VkBuffer debugVertexBuffer;
+	VkDeviceMemory debugVertexBufferMemory;
+	VkDeviceSize debugVertexBufferSize;
+
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 

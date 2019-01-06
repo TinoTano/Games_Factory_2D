@@ -1,10 +1,14 @@
 #include "Application.h"
 
+#ifdef _DEBUG
+#include "MemLeaks.h"
+#endif
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-std::unique_ptr<Application> App = nullptr;
+Application* App = nullptr;
 
 int CALLBACK WinMain(
 	_In_ HINSTANCE hInstance,
@@ -13,7 +17,11 @@ int CALLBACK WinMain(
 	_In_ int       nCmdShow
 )
 {
-	App = std::make_unique<Application>();
+#ifdef _DEBUG
+	ReportMemoryLeaks();
+#endif
+
+	App = new Application();
 
 	if (App != nullptr) {
 		if (App->Init()) {
@@ -24,7 +32,9 @@ int CALLBACK WinMain(
 		}
 	}
 
+	delete App;
 	App = nullptr;
+
 	return 0;
 }
 #else

@@ -1,13 +1,19 @@
 #pragma once
 
+#include "Resource.h"
 #include <vector>
 #include "Component.h"
 #include <gtc/matrix_transform.hpp>
 
 class ComponentTransform;
 class ComponentSprite;
+class ComponentScript;
+class ComponentPhysicsBody;
+class ComponentBoxCollider;
+class Data;
 
-class GameObject
+class GameObject :
+	public Resource
 {
 public:
 	GameObject(std::string name, GameObject* parent = nullptr);
@@ -23,35 +29,31 @@ public:
 	void IncreaseScale(float x, float y);
 	void SetScale(float x, float y);
 
-	ComponentTransform* GetTransform() const;
-	ComponentSprite* GetSprite() const;
+	Component* GetComponentOfType(Component::COMPONENT_TYPE type) const;
+	std::vector<Component*> GetComponentsOfType(Component::COMPONENT_TYPE type) const;
+
 	glm::mat4 GetModelMatrix() const;
+	void UpdateModelMatrix();
 
 	std::vector<Component*> GetComponents();
-	void AddComponent(Component::COMPONENT_TYPE type);
+	Component* AddComponent(Component::COMPONENT_TYPE type);
+	void RemoveComponent(Component* component);
 
 	std::vector<GameObject*> GetChilds() const;
 	void AddChild(GameObject* gameObject);
 	void RemoveChild(GameObject* gameObject);
 
-	void SetName(const char* name);
-	std::string GetName() const;
-
 	void SetActive(bool active);
 	bool GetActive() const;
 
-	std::string GetUID() const;
-
-private:
-	Component* GetComponentOfType(Component::COMPONENT_TYPE type) const;
-	std::vector<Component*> GetComponentsOfType(Component::COMPONENT_TYPE type) const;
+	void SaveData(Data& data);
+	void LoadData(Data& data);
 
 private:
 	GameObject* parent;
+	ComponentTransform* transform;
 	std::vector<Component*> components;
 	std::vector<GameObject*> childs;
-	std::string name;
 	bool active;
-	std::string UID;
 };
 

@@ -6,11 +6,11 @@ class Resource
 public:
 	enum ResourceType
 	{
-		RESOURCE_NONE, RESOURCE_TEXTURE, RESOURCE_SCENE
+		RESOURCE_NONE, RESOURCE_TEXTURE, RESOURCE_SCENE, RESOURCE_ANIM, RESOURCE_LUASCRIPT, RESOURCE_GAMEOBJECT
 	};
 
 	Resource();
-	Resource(std::string name, std::string assetsPath, std::string libraryPath, ResourceType type);
+	Resource(std::string name, std::string assetsPath, std::string fullPath, ResourceType type);
 	~Resource();
 
 	std::string GetUID() const;
@@ -38,6 +38,7 @@ private:
 	ResourceType resType;
 	std::string UID;
 	std::string name;
+	std::string fullPath;
 	std::string assetsPath;
 	std::string libraryPath;
 	int usedCount;

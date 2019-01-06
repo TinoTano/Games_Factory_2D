@@ -19,11 +19,15 @@ public:
 	bool GetBool(std::string name);
 	std::string GetString(std::string name);
 
+	void CreateSection(std::string sectionName);
+	void CloseSection(std::string sectionName);
+
+	bool GetSectionData(std::string sectionName, Data& data);
+
 	void SaveData(std::string path);
-	void LoadData(std::string path);
+	bool LoadData(std::string path);
 
 private:
-	char* data;
 	std::vector<std::string> dataNames;
 	std::vector<std::string> dataValues;
 };

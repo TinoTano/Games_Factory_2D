@@ -1,7 +1,10 @@
 #pragma once
 #include "Module.h"
+#include <vector>
 
 class GameObject;
+class Scene;
+class Data;
 
 class SceneModule :
 	public Module
@@ -11,13 +14,28 @@ public:
 	~SceneModule();
 
 	bool Init();
-	bool Update(float delta_time);
+	bool PreUpdate(float deltaTime);
+	bool Update(float deltaTime);
+	bool CleanUp();
+
+	void LoadScene(std::string path);
+	void SaveScene(std::string path);
+	void ClearScene();
 
 	GameObject* CreateNewObject(GameObject* parent = nullptr, std::string name = "");
+	GameObject* DuplicateGameObject(GameObject& go);
+	void RemoveGameObject(GameObject& gameObject);
+
+	GameObject* FindGameObject(std::string UID);
+
+private:
+	void NewScene();
+	void DestroyScene();
 
 public:
-	GameObject* rootGameObject;
+	Scene* currentScene;
     bool updateSceneVertices;
-	int spritesNum;
+	std::vector<GameObject*> sceneGameObjects;
+	bool clearScene;
 };
 

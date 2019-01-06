@@ -7,6 +7,8 @@ Data::Data()
 
 Data::~Data()
 {
+	dataNames.clear();
+	dataValues.clear();
 }
 
 void Data::AddInt(std::string name, int value)
@@ -77,93 +79,102 @@ std::string Data::GetString(std::string name)
 	return ret;
 }
 
-void Data::SaveData(std::string path)
+void Data::CreateSection(std::string sectionName)
 {
-	uint32_t dataNamesSize = sizeof(std::string) * dataNames.size();
-	uint32_t dataValuesSize = sizeof(std::string) * dataValues.size();
-
-	uint32_t totalSize = 0;
-	totalSize += dataNamesSize;
-	totalSize += dataValuesSize;
-	totalSize += sizeof(uint32_t);
-	totalSize += sizeof(uint32_t);
-
-	data = new char[totalSize];
-	char* cursor = data;
-
-	uint32_t bytes;
-	bytes = sizeof(uint32_t);
-	memcpy(cursor, &dataNamesSize, bytes);
-
-	cursor += bytes;
-	bytes = dataNamesSize;
-	memcpy(cursor, dataNames.data(), bytes);
-
-	cursor += bytes;
-	bytes = sizeof(uint32_t);
-	memcpy(cursor, &dataValuesSize, bytes);
-
-	cursor += bytes;
-	bytes = dataValuesSize;
-	memcpy(cursor, dataValues.data(), bytes);
-
-	std::ofstream outfile(path, std::ofstream::binary);
-	outfile.write(data, totalSize);
-	outfile.close();
-
-	delete[] data;
-	data = nullptr;
+	AddString("Section", sectionName);
 }
 
-void Data::LoadData(std::string path)
+void Data::CloseSection(std::string sectionName)
 {
-	std::ifstream file(path, std::ifstream::binary);
-	if (file.is_open())
+	AddString("CloseSection", sectionName);
+}
+
+bool Data::GetSectionData(std::string sectionName, Data& data)
+{
+	bool ret = false;
+
+	std::vector<std::string>::iterator it = std::find(dataValues.begin(), dataValues.end(), sectionName);
+	if (it != dataValues.end())
 	{
-		// get length of file:
-		file.seekg(0, file.end);
-		int length = file.tellg();
-		file.seekg(0, file.beg);
-
-		char * buffer = new char[length];
-		file.read(buffer, length);
-
-		if (file)
+		ret = true;
+		while (dataNames[it - dataValues.begin()] != "CloseSection" || *it != sectionName)
 		{
-			char* cursor = buffer;
-			uint32_t dataNamesSize;
-			uint32_t dataValuesSize;
-
-			//Get value names
-			uint32_t bytes = sizeof(uint32_t);
-			memcpy(&dataNamesSize, cursor, bytes);
-
-			cursor += bytes;
-			bytes = dataNamesSize;
-			if (!dataNames.empty())
-			{
-				dataNames.clear();
-			}
-			dataNames.resize(bytes / sizeof(std::string));
-			memcpy(dataNames.data(), cursor, bytes);
-
-			//Get value data
-			cursor += bytes;
-			bytes = sizeof(uint32_t);
-			memcpy(&dataValuesSize, cursor, bytes);
-
-			cursor += bytes;
-			bytes = dataValuesSize;
-			if (!dataValues.empty())
-			{
-				dataValues.clear();
-			}
-			dataValues.resize(bytes / sizeof(std::string));
-			memcpy(dataValues.data(), cursor, bytes);
-
-			delete[] buffer;
-			buffer = nullptr;
+			*it++;
+			data.AddString(dataNames[it - dataValues.begin()], *it);
 		}
-		file.close();
 	}
+
+	return ret;
+}
+
+void Data::SaveData(std::string path)
+{
+	FILE* file = fopen(path.c_str(), "wb");
+	if (file != NULL)
+	{
+		int vsize = int(dataNames.size());
+		fwrite(&vsize, sizeof(int), 1, file);
+
+		for (int i = 0; i < dataNames.size(); i++)
+		{
+			vsize = int(dataNames[i].size());
+			fwrite(&vsize, sizeof(int), 1, file);
+			fwrite(dataNames[i].c_str(), sizeof(char), dataNames[i].length(), file);
+		}
+
+		for (int i = 0; i < dataValues.size(); i++)
+		{
+			vsize = int(dataValues[i].size());
+			fwrite(&vsize, sizeof(int), 1, file);
+			fwrite(dataValues[i].c_str(), sizeof(char), dataValues[i].length(), file);
+		}
+		fclose(file);
+	}
+}
+
+bool Data::LoadData(std::string path)
+{
+	bool ret = false;
+
+	FILE* file = fopen(path.c_str(), "rb");
+
+	if (file != NULL)
+	{
+		int size = 0;
+		fread(&size, sizeof(int), 1, file);
+		dataNames.resize(size);
+		dataValues.resize(size);
+
+		for (int i = 0; i < dataNames.size(); i++)
+		{
+			int sSize = 0;
+			fread(&sSize, sizeof(int), 1, file);
+			std::string s;
+			for (int j = 0; j < sSize; j++)
+			{
+				char c;
+				fread(&c, sizeof(char), 1, file);
+				s += c;
+			}
+			dataNames[i] = s;
+		}
+
+		for (int i = 0; i < dataValues.size(); i++)
+		{
+			int sSize = 0;
+			fread(&sSize, sizeof(int), 1, file);
+			std::string s;
+			for (int j = 0; j < sSize; j++)
+			{
+				char c;
+				fread(&c, sizeof(char), 1, file);
+				s += c;
+			}
+			dataValues[i] = s;
+		}
+		ret = true;
+		fclose(file);
+	}
+
+	return ret;
 }

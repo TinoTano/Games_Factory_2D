@@ -5,6 +5,9 @@
 #include "GameObject.h"
 #include "EditorModule.h"
 #include "InspectorWindow.h"
+#include "Scene.h"
+#include "RendererModule.h"
+#include "Physics2DModule.h"
 
 HierarchyWindow::HierarchyWindow(const char* windowName, bool enabled) : EditorWindow(windowName, enabled)
 {
@@ -21,9 +24,9 @@ void HierarchyWindow::DrawWindow()
 	ImGui::Begin("Hierarchy");
 	if (ImGui::Button("Create GameObject"))
 	{
-		App->sceneModule->CreateNewObject();
+		App->sceneModule->CreateNewObject(App->sceneModule->currentScene->GetRootGameObject());
 	}
-	std::vector<GameObject*> childs = App->sceneModule->rootGameObject->GetChilds();
+	std::vector<GameObject*> childs = App->sceneModule->currentScene->GetRootGameObject()->GetChilds();
 	for (GameObject* go : childs)
 	{
 		if (ImGui::GetItemRectMax().y > ImGui::GetWindowPos().y + ImGui::GetWindowSize().y) break;
@@ -38,11 +41,24 @@ void HierarchyWindow::DrawWindow()
     {
         if(!ImGui::IsAnyItemHovered() && ImGui::IsWindowFocused())
         {
-            selectedGameObject = nullptr;
-            App->editorModule->inspectorWindow->SetSelectedGameObject(nullptr);
+			RemoveSelectedGameObject();
         }
     }
+
+	if (childs.empty())
+	{
+		RemoveSelectedGameObject();
+		showGameObjectOptions = false;
+	}
+
 	ImGui::End();
+}
+
+void HierarchyWindow::RemoveSelectedGameObject()
+{
+	selectedGameObject = nullptr;
+	App->editorModule->inspectorWindow->SetSelectedGameObject(nullptr);
+	App->rendererModule->CleanDebugVertex();
 }
 
 void HierarchyWindow::ShowGameObjectOptions()
@@ -78,21 +94,34 @@ void HierarchyWindow::DrawNodes(GameObject * gameObject)
 
 	if (ImGui::TreeNodeEx(gameObject->GetName().c_str(), flags))
 	{
-		if (ImGui::IsItemClicked())
-		{
-			selectedGameObject = gameObject;
-			App->editorModule->inspectorWindow->SetSelectedGameObject(gameObject);
-		}
-		if (ImGui::IsItemClicked(1))
-		{
-			showGameObjectOptions = true;
-			optionsWindowPos = ImGui::GetCursorPos();
-		}
+		CheckMouseSelect(*gameObject);
 		std::vector<GameObject*> childs = gameObject->GetChilds();
 		for (GameObject* child : childs)
 		{
 			DrawNodes(child);
 		}
 		ImGui::TreePop();
+	}
+	else
+	{
+		CheckMouseSelect(*gameObject);
+	}
+}
+
+void HierarchyWindow::CheckMouseSelect(GameObject& gameObject)
+{
+	if (ImGui::IsItemClicked())
+	{
+		if (selectedGameObject != &gameObject)
+		{
+			selectedGameObject = &gameObject;
+			App->editorModule->inspectorWindow->SetSelectedGameObject(&gameObject);
+			App->physics2DModule->SetGameObjectToDebug(gameObject);
+		}
+	}
+	if (ImGui::IsItemClicked(1))
+	{
+		showGameObjectOptions = true;
+		optionsWindowPos = ImGui::GetCursorPos();
 	}
 }

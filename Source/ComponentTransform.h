@@ -8,7 +8,7 @@ class ComponentTransform :
 	public Component
 {
 public:
-	ComponentTransform(GameObject& gameObject, const char* componentName, COMPONENT_TYPE type);
+	ComponentTransform(GameObject& gameObject, const char* componentName);
 	~ComponentTransform();
 
 	void SetPosition(glm::vec2 position);
@@ -39,7 +39,12 @@ public:
 	float GetGlobalScaleX() const;
 	float GetGlobalScaleY() const;
 
+	void UpdateMatrix();
+
 	glm::mat4 GetModelMatrix() const;
+
+	void SaveData(Data& data);
+	void LoadData(Data& data);
 
 private:
 	glm::vec2 localPosition;
@@ -51,8 +56,5 @@ private:
 	glm::vec2 globalScale;
 
 	glm::mat4 modelMatrix;
-	glm::vec2 prevPos;
-	float prevRot;
-	glm::vec2 prevScale;
 };
 

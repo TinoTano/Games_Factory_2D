@@ -6,7 +6,7 @@ struct File
 {
 	enum FileType
 	{
-		SPRITE, SCENE, UNKNOWN
+		SPRITE, SCENE, ANIMATION, LUASCRIPT, UNKNOWN
 	};
 	std::string name;
 	std::string path;
@@ -34,6 +34,7 @@ public:
 	bool Init();
 
 	std::string LoadBinaryTextFile(const char* filePath);
+	std::string LoadTextFile(const char* filePath);
 	void SaveFileTo(const char* finalPath);
 	std::string GetWorkingPath();
 	void FillDirectoryData(Directory& directory);
@@ -42,12 +43,22 @@ public:
 	void CheckDirectoryChanges(Directory& directory);
 	void CheckAssetsFolder();
 	void CheckLibraryFolder();
-	void CreateDirectory(std::string path);
+	bool CreateDirectory(std::string path);
 	void Delete(std::string path);
 	std::string CreateUID();
 	bool FileExist(std::string path);
+	std::string GetExtension(std::string path) const;
+	std::string GetName(std::string path) const;
+	void GetDirectoryFilesPath(std::string directoryPath, std::vector<std::string>& files, bool recursive);
+	std::vector<std::string> GetAssetsFilesPaths();
+	std::vector<std::string> GetLibraryFilesPaths();
 
 private:
 	File::FileType GetFileType(std::string extension) const;
+	std::string GetFileText() const;
+
+public:
+	std::string assetsPath;
+	std::string libraryPath;
 };
 

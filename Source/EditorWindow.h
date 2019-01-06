@@ -12,6 +12,16 @@ public:
     {
         return windowName;
     }
+
+	bool IsEnabled() const
+	{
+		return enabled;
+	}
+
+	void Enable(bool enable)
+	{
+		enabled = enable;
+	}
     
 protected:
     const char* windowName;

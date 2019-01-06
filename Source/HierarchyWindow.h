@@ -13,8 +13,11 @@ public:
 
 	void DrawWindow();
 
+	void RemoveSelectedGameObject();
+
 private:
 	void ShowGameObjectOptions();
+	void CheckMouseSelect(GameObject& gameObject);
 
 private:
 	void DrawNodes(GameObject* gameObject);

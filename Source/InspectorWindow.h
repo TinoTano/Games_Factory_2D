@@ -5,12 +5,16 @@
 class GameObject;
 class ComponentTransform;
 class ComponentSprite;
+class ComponentScript;
+class ComponentPhysicsBody;
+class ComponentBoxCollider;
+class ComponentCircleCollider;
 
 class InspectorWindow : public EditorWindow
 {
 public:
     InspectorWindow(const char* windowName, bool enabled = true);
-    ~InspectorWindow();
+    virtual ~InspectorWindow();
     
     void DrawWindow();
 	
@@ -18,8 +22,12 @@ public:
 
 private:
 	void DrawInfo(GameObject& go);
-	void DrawTransform(ComponentTransform& transform);
-	void DrawSprite(ComponentSprite& transform);
+	void DrawTransform(ComponentTransform& compTransform);
+	void DrawSprite(ComponentSprite& compSprite);
+	void DrawScript(ComponentScript& compScript);
+	void DrawPhysicsBody(ComponentPhysicsBody& compPhysBody);
+	void DrawBoxCollider(ComponentBoxCollider& compBoxColl);
+	void DrawCircleCollider(ComponentCircleCollider& compCircleColl);
 
 	void ShowAddComponentWindow();
 

@@ -1,19 +1,20 @@
 #include "ComponentTransform.h"
 #include "GameObject.h"
 #include "Globals.h"
+#include "Data.h"
+#include "ComponentPhysicsBody.h"
+#include "Application.h"
+#include "Physics2DModule.h"
 
-ComponentTransform::ComponentTransform(GameObject& gameObject, const char* componentName, COMPONENT_TYPE type) :
-	Component(gameObject, componentName, type)
+ComponentTransform::ComponentTransform(GameObject& gameObject, const char* componentName) :
+	Component(gameObject, componentName, COMPONENT_TYPE::TRANSFORM)
 {
-	localPosition = { 0,0 };
-	localRotation = 0;
-	localScale = { 1,1 };
-
-	globalPosition = { 0,0 };
-	globalRotation = 0;
-	globalScale = { 1,1 };
+	localPosition = globalPosition = { 0,0 };
+	localRotation = globalRotation = 0;
+	localScale = globalScale = { 1,1 };
 
 	modelMatrix = glm::mat4(1);
+	UpdateMatrix();
 }
 
 ComponentTransform::~ComponentTransform()
@@ -23,15 +24,8 @@ ComponentTransform::~ComponentTransform()
 
 void ComponentTransform::SetPosition(glm::vec2 position)
 {
-	GameObject* parent = gameObject->GetParent();
-	prevPos = localPosition;
-
 	localPosition = position;
-	globalPosition = position + parent->GetTransform()->GetGlobalPosition();
-
-	glm::vec2 diff = localPosition - prevPos;
-
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(diff, 0.0f));
+	UpdateMatrix();
 }
 
 void ComponentTransform::IncreasePosition(glm::vec2 increase)
@@ -72,17 +66,8 @@ float ComponentTransform::GetGlobalPositionY() const
 
 void ComponentTransform::SetRotation(float angle)
 {
-	GameObject* parent = gameObject->GetParent();
-	prevRot = localRotation;
-
 	localRotation = angle;
-	globalRotation = localRotation + parent->GetTransform()->GetGlobalRotation();
-
-	float diff = localRotation - prevRot;
-
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(-globalPosition.x, -globalPosition.y, 0.0f));
-	modelMatrix = glm::rotate(modelMatrix, glm::radians(diff), glm::vec3(0.0f, 0.0f, 1.0f));
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(globalPosition.x, globalPosition.y, 0.0f));
+	UpdateMatrix();
 }
 
 void ComponentTransform::IncreaseRotation(float angle)
@@ -103,34 +88,15 @@ float ComponentTransform::GetGlobalRotation() const
 
 void ComponentTransform::SetScale(glm::vec2 scale)
 {
-	GameObject* parent = gameObject->GetParent();
-    
-    prevScale = localScale;
+	if (scale.x < 0 || scale.y < 0)
+	{
+		if (scale.x < 0) scale.x = 0;
+		if (scale.y < 0) scale.y = 0;
+		return;
+	}
 
 	localScale = scale;
-	globalScale = localScale + parent->GetTransform()->GetGlobalScale();
-
-	/*glm::vec2 origin(0,0);
-
-	float angle = -globalRotation * 3.141592654f / 180.f;
-	float cosine = static_cast<float>(std::cos(angle));
-	float sine = static_cast<float>(std::sin(angle));
-	float sxc = globalScale.x * cosine;
-	float syc = globalScale.y * cosine;
-	float sxs = globalScale.x * sine;
-	float sys = globalScale.y * sine;
-	float tx = -origin.x * sxc - origin.y * sys + globalPosition.x;
-	float ty = origin.x * sxs - origin.y * syc + globalPosition.y;
-
-	modelMatrix = glm::mat4((glm::mat3(sxc, sys, tx,
-		-sxs, syc, ty,
-		0.f, 0.f, 1.f)));*/
-
-	glm::vec2 diff = localScale - prevScale;
-	diff.x = 1 + diff.x;
-	diff.y = 1 + diff.y;
-	//CONSOLE_LOG("%.3f, %.3f", diff.x, diff.y);
-	modelMatrix = glm::scale(modelMatrix, glm::vec3(diff, 1.0f));
+	UpdateMatrix();
 }
 
 void ComponentTransform::IncreaseScale(glm::vec2 increase)
@@ -169,7 +135,54 @@ float ComponentTransform::GetGlobalScaleY() const
 	return globalScale.y;
 }
 
+void ComponentTransform::UpdateMatrix()
+{
+	GameObject* parent = gameObject->GetParent();
+	glm::mat4 parentMatrix = (parent) ? parent->GetModelMatrix() : glm::mat4(1);
+
+	glm::mat4 m = glm::mat4(1);
+	m = glm::translate(m, glm::vec3(localPosition, 1.0f));
+	m = glm::rotate(m, glm::radians(localRotation), glm::vec3(0.0f, 0.0f, 1.0f));
+	m = glm::scale(m, glm::vec3(localScale, 1.0f));
+	modelMatrix = parentMatrix * m;
+	
+	globalPosition = { modelMatrix[3].x, modelMatrix[3].y };
+	globalRotation = glm::degrees(glm::atan(modelMatrix[0][1], modelMatrix[0][0]));
+	globalScale = { glm::length(modelMatrix[0]), glm::length(modelMatrix[1]) };
+
+	ComponentPhysicsBody* compPhysBody = (ComponentPhysicsBody*)gameObject->GetComponentOfType(Component::PHYSICS_BODY);
+
+	if (compPhysBody != nullptr)
+	{
+		App->physics2DModule->SetBodyTransform(compPhysBody->GetBody(), globalPosition, globalRotation, globalScale);
+	}
+
+	std::vector<GameObject*> childs = gameObject->GetChilds();
+	for (GameObject* child : childs)
+	{
+		child->UpdateModelMatrix();
+	}
+}
+
 glm::mat4 ComponentTransform::GetModelMatrix() const
 {
 	return modelMatrix;
+}
+
+void ComponentTransform::SaveData(Data & data)
+{
+	data.AddInt("Type", GetComponentType());
+	data.AddFloat("LocalPositionX", localPosition.x);
+	data.AddFloat("LocalPositionY", localPosition.y);
+	data.AddFloat("Rotation", localRotation);
+	data.AddFloat("LocalScaleX", localScale.x);
+	data.AddFloat("LocalScaleY", localScale.y);
+}
+
+void ComponentTransform::LoadData(Data & data)
+{
+	localPosition = { data.GetFloat("LocalPositionX"), data.GetFloat("LocalPositionY") };
+	localRotation = data.GetFloat("Rotation");
+	localScale = { data.GetFloat("LocalScaleX"), data.GetFloat("LocalScaleY") };
+	UpdateMatrix();
 }

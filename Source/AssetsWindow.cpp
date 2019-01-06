@@ -16,12 +16,13 @@ AssetsWindow::AssetsWindow(const char* windowName, bool enabled) : EditorWindow(
 
 AssetsWindow::~AssetsWindow()
 {
+	delete assetsDirectory;
+	assetsDirectory = nullptr;
 }
 
 void AssetsWindow::DrawWindow()
 {
-	bool open = true;
-	ImGui::Begin("Assets", &open);
+	ImGui::Begin("Assets");
 	ImGui::Columns(2);
 	ImGui::BeginChild("child");
 	DrawDirectories(*assetsDirectory);

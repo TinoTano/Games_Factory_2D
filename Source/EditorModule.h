@@ -6,6 +6,7 @@ class InspectorWindow;
 class EditorWindow;
 class HierarchyWindow;
 class AssetsWindow;
+class AnimationWindow;
 
 class EditorModule : public Module
 {
@@ -18,10 +19,17 @@ public:
     bool PostUpdate(float deltaTime);
     bool CleanUp();
     
+private:
+	void DrawMainMenu();
+	void DrawFileMenu();
+	void DrawWindowsMenu();
+	void DrawDebugWindow();
+
 public:
     InspectorWindow* inspectorWindow;
 	HierarchyWindow* hierarchyWindow;
 	AssetsWindow* assetsWindow;
+	AnimationWindow* animationWindow;
     
 private:
     std::vector<EditorWindow*> editorWindows;

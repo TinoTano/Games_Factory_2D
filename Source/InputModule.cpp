@@ -21,6 +21,7 @@ InputModule::~InputModule()
 bool InputModule::Start()
 {
 	glfwSetKeyCallback(App->windowModule->engineWindow, InputModule::KeyCallback);
+	glfwSetMouseButtonCallback(App->windowModule->engineWindow, InputModule::MouseCallback);
 	glfwSetScrollCallback(App->windowModule->engineWindow, InputModule::ScrollCallback);
 	glfwSetWindowFocusCallback(App->windowModule->engineWindow, InputModule::WindowFocusCallback);
 
@@ -71,15 +72,19 @@ void InputModule::KeyCallback(GLFWwindow * window, int key, int scancode, int ac
 	}
 }
 
+void InputModule::MouseCallback(GLFWwindow * window, int button, int action, int mods)
+{
+}
+
 void InputModule::ScrollCallback(GLFWwindow * window, double xoffset, double yoffset)
 {
 	if (yoffset == -1)
 	{
-		App->cameraModule->IncreaseZoom(-0.01f);
+		App->cameraModule->IncreaseZoom(0.90f);
 	}
 	else
 	{
-		App->cameraModule->IncreaseZoom(0.01f);
+		App->cameraModule->IncreaseZoom(1.10f);
 	}
 }
 
@@ -92,5 +97,10 @@ void InputModule::WindowFocusCallback(GLFWwindow * window, int focused)
 			App->editorModule->assetsWindow->CheckDirectories();
 		}
 	}
+}
+
+int InputModule::GetMouseButton(int button)
+{
+	return mouseButtons[button];
 }
 

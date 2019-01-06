@@ -3,7 +3,7 @@
 #include "WindowModule.h"
 #include "InputModule.h"
 #include "RendererModule.h"
-#include "Globals.h"
+#include "Log.h"
 #include "FileSystemModule.h"
 #include "VulkanModule.h"
 #include "SceneModule.h"
@@ -11,6 +11,10 @@
 #include "EditorModule.h"
 #include <thread>
 #include "md5.h"
+#include "ResourceManagerModule.h"
+#include "Builder.h"
+#include "LuaScripting.h"
+#include "Physics2DModule.h"
 
 Application::Application()
 {
@@ -29,33 +33,47 @@ Application::Application()
 
 	engineState = EngineState::OnStop;
 
-	modulesList.reserve(8);
-	modulesList.emplace_back(windowModule = std::make_shared<WindowModule>("Window Module"));
-	modulesList.emplace_back(fileSystemModule = std::make_shared<FileSystemModule>("File System Module"));
-	modulesList.emplace_back(inputModule = std::make_shared<InputModule>("Input Module"));
-	modulesList.emplace_back(cameraModule = std::make_shared<CameraModule>("Camera Module"));
-	modulesList.emplace_back(sceneModule = std::make_shared<SceneModule>("Scene Module"));
-	modulesList.emplace_back(editorModule = std::make_shared<EditorModule>("Editor Module"));
-	modulesList.emplace_back(vulkanModule = std::make_shared<VulkanModule>("Vulkan Module"));
-	modulesList.emplace_back(rendererModule = std::make_shared<RendererModule>("Renderer Module"));
+	//modulesList.reserve(9);
+	modulesList.emplace_back(windowModule = new WindowModule("Window Module"));
+	modulesList.emplace_back(fileSystemModule = new FileSystemModule("File System Module"));
+	modulesList.emplace_back(inputModule = new InputModule("Input Module"));
+	modulesList.emplace_back(cameraModule = new CameraModule("Camera Module"));
+	modulesList.emplace_back(sceneModule = new SceneModule("Scene Module"));
+	modulesList.emplace_back(editorModule = new EditorModule("Editor Module"));
+	modulesList.emplace_back(vulkanModule = new VulkanModule("Vulkan Module"));
+	modulesList.emplace_back(rendererModule = new RendererModule("Renderer Module"));
+	modulesList.emplace_back(resourceManagerModule = new ResourceManagerModule("Resources Manager Module"));
+	modulesList.emplace_back(physics2DModule = new Physics2DModule("Physics2D Module"));
+
+	luaScripting = new LuaScripting();
+	builder = new Builder();
 }
 
 Application::~Application()
 {
-	
+	windowModule = nullptr;
+	inputModule = nullptr;
+	rendererModule = nullptr;
+	fileSystemModule = nullptr;
+	vulkanModule = nullptr;
+	sceneModule = nullptr;
+	cameraModule = nullptr;
+	editorModule = nullptr;
+	resourceManagerModule = nullptr;
+	physics2DModule = nullptr;
 }
 
 bool Application::Init()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modulesList)
+	for (Module* module : modulesList)
 	{
 		ret = module->Init();
 
 		if (!ret)
 		{
-			CONSOLE_ERROR("Module %s Init() failed", module->GetName());
+			CONSOLE_ERROR("Module %s Init() failed", module->GetModuleName());
 			break;
 		}
 	}
@@ -67,13 +85,13 @@ bool Application::Start()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modulesList)
+	for (Module* module : modulesList)
 	{
 		ret = module->Start();
 		
 		if (!ret)
 		{
-			CONSOLE_ERROR("Module %s Start() failed", module->GetName());
+			CONSOLE_ERROR("Module %s Start() failed", module->GetModuleName());
 			break;
 		}
 	}
@@ -86,7 +104,7 @@ bool Application::Start()
 
 bool Application::DoUpdate()
 {
-	deltaTime = msTimer.ReadAsMS();
+	deltaTime = msTimer.ReadAsSec();
 	msTimer.StartTimer();
 
 	bool ret = true;
@@ -109,7 +127,7 @@ bool Application::PreUpdate()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modulesList)
+	for (Module* module : modulesList)
 	{
 		Timer t;
 		t.StartTimer();
@@ -118,7 +136,7 @@ bool Application::PreUpdate()
 		
 		if (!ret)
 		{
-			CONSOLE_ERROR("Module %s PreUpdate() failed", module->GetName());
+			CONSOLE_ERROR("Module %s PreUpdate() failed", module->GetModuleName());
 			break;
 		}
 	}
@@ -130,7 +148,7 @@ bool Application::Update()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modulesList)
+	for (Module* module : modulesList)
 	{
 		Timer t;
 		t.StartTimer();
@@ -139,7 +157,7 @@ bool Application::Update()
 
 		if (!ret)
 		{
-			CONSOLE_ERROR("Module %s Update() failed", module->GetName());
+			CONSOLE_ERROR("Module %s Update() failed", module->GetModuleName());
 			break;
 		}
 	}
@@ -151,7 +169,7 @@ bool Application::PostUpdate()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modulesList)
+	for (Module* module : modulesList)
 	{
 		Timer t;
 		t.StartTimer();
@@ -160,7 +178,7 @@ bool Application::PostUpdate()
 
 		if (!ret)
 		{
-			CONSOLE_ERROR("Module %s PostUpdate() failed", module->GetName());
+			CONSOLE_ERROR("Module %s PostUpdate() failed", module->GetModuleName());
 			break;
 		}
 	}
@@ -197,16 +215,27 @@ bool Application::CleanUp()
 {
 	bool ret = true;
 
-	for (std::shared_ptr<Module> module : modulesList)
+	for (Module* module : modulesList)
 	{
 		ret = module->CleanUp();
 		
 		if (!ret)
 		{
-			CONSOLE_ERROR("Module %s CleanUp() failed", module->GetName());
+			CONSOLE_ERROR("Module %s CleanUp() failed", module->GetModuleName());
 			break;
 		}
+
+		delete module;
+		module = nullptr;
 	}
+
+	modulesList.clear();
+
+	delete luaScripting;
+	luaScripting = nullptr;
+
+	delete builder;
+	builder = nullptr;
 
 	return ret;
 }
@@ -246,6 +275,31 @@ bool Application::IsStopped()
 	return engineState == EngineState::OnStop;
 }
 
+void Application::AdvanceStep()
+{
+	for (Module* module : modulesList)
+	{
+		if (module->IsGameModule())
+		{
+			module->PreUpdate(deltaTime);
+		}
+	}
+	for (Module* module : modulesList)
+	{
+		if (module->IsGameModule())
+		{
+			module->Update(deltaTime);
+		}
+	}
+	for (Module* module : modulesList)
+	{
+		if (module->IsGameModule())
+		{
+			module->PostUpdate(deltaTime);
+		}
+	}
+}
+
 void Application::QuitEngine()
 {
 	quit = true;
@@ -253,12 +307,17 @@ void Application::QuitEngine()
 
 int Application::GetFPS() const
 {
-	return numFps;
+	return lastFps;
 }
 
 bool Application::IsEditor() const
 {
 	return isEditor;
+}
+
+float Application::GetDeltaTime() const
+{
+	return deltaTime;
 }
 
 void Application::StopNow()

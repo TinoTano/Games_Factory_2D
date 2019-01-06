@@ -38,9 +38,14 @@ public:
 		return true;
 	}
 
-	const char* GetName() const
+	const char* GetModuleName() const
 	{
 		return moduleName;
+	}
+
+	bool IsGameModule() const
+	{
+		return gameModule;
 	}
 
 private:

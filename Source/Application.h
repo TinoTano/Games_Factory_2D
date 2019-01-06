@@ -2,7 +2,6 @@
 
 #include <vector>
 #include "Timer.h"
-#include <memory>
 
 class Module;
 class WindowModule;
@@ -13,6 +12,10 @@ class VulkanModule;
 class SceneModule;
 class CameraModule;
 class EditorModule;
+class ResourceManagerModule;
+class Builder;
+class LuaScripting;
+class Physics2DModule;
 
 class Application
 {
@@ -37,11 +40,15 @@ public:
 	bool IsPaused();
 	bool IsStopped();
 
+	void AdvanceStep();
+
 	void QuitEngine();
 
 	int GetFPS()const;
 
 	bool IsEditor() const;
+
+	float GetDeltaTime() const;
 
 private:
 	bool PreUpdate();
@@ -52,17 +59,21 @@ private:
 	void PauseNow();
 
 public:
-	std::shared_ptr<WindowModule> windowModule;
-	std::shared_ptr<InputModule> inputModule;
-	std::shared_ptr<RendererModule> rendererModule;
-	std::shared_ptr<FileSystemModule> fileSystemModule;
-	std::shared_ptr<VulkanModule> vulkanModule;
-	std::shared_ptr<SceneModule> sceneModule;
-	std::shared_ptr<CameraModule> cameraModule;
-    std::shared_ptr<EditorModule> editorModule;
+	WindowModule* windowModule;
+	InputModule* inputModule;
+	RendererModule* rendererModule;
+	FileSystemModule* fileSystemModule;
+	VulkanModule* vulkanModule;
+	SceneModule* sceneModule;
+	CameraModule* cameraModule;
+    EditorModule* editorModule;
+	ResourceManagerModule* resourceManagerModule;
+	Builder* builder;
+	LuaScripting* luaScripting;
+	Physics2DModule* physics2DModule;
 
 private:
-	std::vector<std::shared_ptr<Module>> modulesList;
+	std::vector<Module*> modulesList;
 
 	EngineState engineState;
 
@@ -84,4 +95,4 @@ private:
 	bool toPause;
 };
 
-extern std::unique_ptr<Application> App;
+extern Application* App;

@@ -1,5 +1,5 @@
 #pragma once
-#include "Globals.h"
+#include "Log.h"
 #include "Application.h"
 #include <stdio.h>
 

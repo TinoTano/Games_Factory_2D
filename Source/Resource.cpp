@@ -8,10 +8,11 @@ Resource::Resource()
 {
 }
 
-Resource::Resource(std::string name, std::string assetsPath, std::string libraryPath, ResourceType type) :
-	name(name), assetsPath(assetsPath), libraryPath(libraryPath), resType(type), usedCount(0)
+Resource::Resource(std::string name, std::string assetsPath, std::string fullPath, ResourceType type) :
+	name(name), assetsPath(assetsPath), fullPath(fullPath), resType(type), usedCount(0)
 {
 	UID = App->fileSystemModule->CreateUID();
+	//SetLibraryPath(App->fileSystemModule->libraryPath + "/" + UID);
 }
 
 Resource::~Resource()

@@ -1,7 +1,7 @@
 #include "FileSystemModule.h"
 #include <experimental/filesystem>
 #include <fstream>
-#include "Globals.h"
+#include "Log.h"
 #include <vector>
 #include "AssetsWindow.h"
 #include <algorithm>
@@ -13,7 +13,8 @@ namespace fs = std::experimental::filesystem;
 
 FileSystemModule::FileSystemModule(const char* moduleName, bool gameModule) : Module(moduleName, gameModule)
 {
-
+	assetsPath = GetWorkingPath() + "/Data/Assets";
+	libraryPath = GetWorkingPath() + "/Data/Library";
 }
 
 FileSystemModule::~FileSystemModule()
@@ -52,6 +53,11 @@ std::string FileSystemModule::LoadBinaryTextFile(const char* filePath)
 	}
 
 	return fileText;
+}
+
+std::string FileSystemModule::LoadTextFile(const char * filePath)
+{
+	return std::string();
 }
 
 void FileSystemModule::SaveFileTo(const char * final_path)
@@ -168,23 +174,31 @@ void FileSystemModule::CheckDirectoryChanges(Directory & directory)
 
 void FileSystemModule::CheckAssetsFolder()
 {
-	if (!fs::exists(GetWorkingPath() + "/Data/Assets"))
+	if (!fs::exists(assetsPath))
 	{
-		fs::create_directory(GetWorkingPath() + "/Data/Assets");
+		fs::create_directory(assetsPath);
 	}
 }
 
 void FileSystemModule::CheckLibraryFolder()
 {
-	if (!fs::exists(GetWorkingPath() + "/Data/Library"))
+	if (!fs::exists(libraryPath))
 	{
-		fs::create_directory(GetWorkingPath() + "/Data/Library");
+		fs::create_directory(libraryPath);
 	}
 }
 
-void FileSystemModule::CreateDirectory(std::string path)
+bool FileSystemModule::CreateDirectory(std::string path)
 {
-	fs::create_directory(path);
+	if (!FileExist(path))
+	{
+		if (!fs::create_directory(path))
+		{
+			CONSOLE_ERROR("Cannot create %s folder", path.c_str());
+			return false;
+		}
+	}
+	return true;
 }
 
 void FileSystemModule::Delete(std::string path)
@@ -213,6 +227,60 @@ bool FileSystemModule::FileExist(std::string path)
 	return fs::exists(path);
 }
 
+std::string FileSystemModule::GetExtension(std::string path) const
+{
+	std::string extension = "";
+	fs::path p(path);
+	if (p.has_extension()) 
+	{
+		extension = p.extension().string();
+	}
+	return extension;
+}
+
+std::string FileSystemModule::GetName(std::string path) const
+{
+	fs::path p(path);
+	return p.filename().string();
+}
+
+void FileSystemModule::GetDirectoryFilesPath(std::string directoryPath, std::vector<std::string>& files, bool recursive)
+{
+	fs::path path(directoryPath);
+	for (auto& p : fs::directory_iterator(path))
+	{
+		if (!fs::is_directory(p.path()))
+		{
+			files.emplace_back(p.path().string());
+		}
+		else
+		{
+			if (recursive)
+			{
+				GetDirectoryFilesPath(p.path().string(), files, recursive);
+			}
+		}
+	}
+}
+
+std::vector<std::string> FileSystemModule::GetAssetsFilesPaths()
+{
+	std::vector<std::string> paths;
+
+	GetDirectoryFilesPath(assetsPath, paths, true);
+
+	return paths;
+}
+
+std::vector<std::string> FileSystemModule::GetLibraryFilesPaths()
+{
+	std::vector<std::string> paths;
+
+	GetDirectoryFilesPath(libraryPath, paths, true);
+
+	return paths;
+}
+
 File::FileType FileSystemModule::GetFileType(std::string extension) const
 {
 	File::FileType type;
@@ -231,6 +299,11 @@ File::FileType FileSystemModule::GetFileType(std::string extension) const
 	}
 
 	return type;
+}
+
+std::string FileSystemModule::GetFileText() const
+{
+	return std::string();
 }
 
 

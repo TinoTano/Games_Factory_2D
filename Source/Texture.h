@@ -5,26 +5,27 @@ class Texture :
 	public Resource
 {
 public:
-	Texture();
+	Texture(std::string name, std::string assetsPath, std::string fullPath);
 	~Texture();
 
-	bool LoadFromFile(const char* filePath);
+	bool LoadFromFile(std::string filePath);
 
-	uint32_t GetWidth() const;
-	uint32_t GetHeight() const;
+	int GetWidth() const;
+	int GetHeight() const;
 	//uint8_t* GetData() const;
-	uint32_t GetMipMapLevels() const;
+	int GetMipMapLevels() const;
 
 public:
 	uint64_t textureImage;
 	uint64_t textureImageMemory;
 	uint64_t textureImageView;
 	uint64_t textureSampler;
+	int textureIndex;
 
 private:
-	uint32_t width;
-	uint32_t height;
+	int width;
+	int height;
 	//uint8_t* textureData;
-	uint32_t mipmapLevels;
+	int mipmapLevels;
 };
 
