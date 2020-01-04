@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{85980ACD-FCB6-43D5-82B3-B96EDC28DBF8}</ProjectGuid>
+    <RootNamespace>GamesFactory2D</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty/glm;$(ProjectDir)ThirdParty/glfw-3.2.1/include;$(ProjectDir)ThirdParty/Vulkan_1.1.82.1/Include;$(ProjectDir)ThirdParty/ImGui;$(ProjectDir)ThirdParty/stb/;$(ProjectDir)ThirdParty/tinyfiledialogs/;$(ProjectDir)ThirdParty/Lua_5.3.4/include;$(ProjectDir)ThirdParty/Box2D</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)Source\ThirdParty\Vulkan_1.1.82.1\Lib32;$(SolutionDir)Source\ThirdParty\glfw-3.2.1\lib;$(SolutionDir)Source\ThirdParty\Lua_5.3.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty/glfw-3.2.1/lib/glfw3.lib;$(ProjectDir)ThirdParty/Vulkan_1.1.82.1/Lib32/vulkan-1.lib;$(ProjectDir)ThirdParty/Lua_5.3.4/lib/lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Source\ThirdParty\Vulkan_1.1.73.0\Lib;$(SolutionDir)Source\ThirdParty\glfw-3.2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)ThirdParty/glm;$(ProjectDir)ThirdParty/glfw-3.2.1/include;$(ProjectDir)ThirdParty/Vulkan_1.1.82.1/Include;$(ProjectDir)ThirdParty/ImGui;$(ProjectDir)ThirdParty/stb/;$(ProjectDir)ThirdParty/tinyfiledialogs/;$(ProjectDir)ThirdParty/Lua_5.3.4/include;$(ProjectDir)ThirdParty/Box2D</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)Source\ThirdParty\Vulkan_1.1.82.1\Lib32;$(SolutionDir)Source\ThirdParty\glfw-3.2.1\lib;$(SolutionDir)Source\ThirdParty\Lua_5.3.4\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(ProjectDir)ThirdParty/glfw-3.2.1/lib/glfw3.lib;$(ProjectDir)ThirdParty/Vulkan_1.1.82.1/Lib32/vulkan-1.lib;$(ProjectDir)ThirdParty/Lua_5.3.4/lib/lua53.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)Source\ThirdParty\Vulkan_1.1.73.0\Lib;$(SolutionDir)Source\ThirdParty\glfw-3.2.1\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationWindow.cpp" />
+    <ClCompile Include="Application.cpp" />
+    <ClCompile Include="AssetsWindow.cpp" />
+    <ClCompile Include="Builder.cpp" />
+    <ClCompile Include="CameraModule.cpp" />
+    <ClCompile Include="Component.cpp" />
+    <ClCompile Include="ComponentBoxCollider.cpp" />
+    <ClCompile Include="ComponentCircleCollider.cpp" />
+    <ClCompile Include="ComponentCollider.cpp" />
+    <ClCompile Include="ComponentScript.cpp" />
+    <ClCompile Include="ComponentSprite.cpp" />
+    <ClCompile Include="ComponentTransform.cpp" />
+    <ClCompile Include="CustomImGui.cpp" />
+    <ClCompile Include="Data.cpp" />
+    <ClCompile Include="EditorModule.cpp" />
+    <ClCompile Include="FileSystemModule.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="InputModule.cpp" />
+    <ClCompile Include="InspectorWindow.cpp" />
+    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="LuaScript.cpp" />
+    <ClCompile Include="LuaScripting.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="md5.cpp" />
+    <ClCompile Include="Physics2DModule.cpp" />
+    <ClCompile Include="ProjectSettingsWindow.cpp" />
+    <ClCompile Include="RendererModule.cpp" />
+    <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceManagerModule.cpp" />
+    <ClCompile Include="ComponentPhysicsBody.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="SceneModule.cpp" />
+    <ClCompile Include="HierarchyWindow.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2BroadPhase.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2CollideCircle.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2CollideEdge.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2CollidePolygon.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2Collision.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2Distance.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2DynamicTree.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2TimeOfImpact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2ChainShape.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2CircleShape.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2EdgeShape.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2PolygonShape.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Common\b2BlockAllocator.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Draw.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Math.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Settings.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Common\b2StackAllocator.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Timer.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2Body.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2ContactManager.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2Fixture.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2Island.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2World.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2WorldCallbacks.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2CircleContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2Contact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2ContactSolver.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonContact.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2DistanceJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2FrictionJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2GearJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2Joint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2MotorJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2MouseJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2PrismaticJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2PulleyJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2RevoluteJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2RopeJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2WeldJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2WheelJoint.cpp" />
+    <ClCompile Include="ThirdParty\Box2D\Rope\b2Rope.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="ThirdParty\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="ThirdParty\tinyfiledialogs\tinyfiledialogs.c" />
+    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="VulkanModule.cpp" />
+    <ClCompile Include="WindowModule.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="AnimationWindow.h" />
+    <ClInclude Include="Application.h" />
+    <ClInclude Include="AssetsWindow.h" />
+    <ClInclude Include="Builder.h" />
+    <ClInclude Include="CameraModule.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="ComponentBoxCollider.h" />
+    <ClInclude Include="ComponentCircleCollider.h" />
+    <ClInclude Include="ComponentCollider.h" />
+    <ClInclude Include="ComponentScript.h" />
+    <ClInclude Include="ComponentSprite.h" />
+    <ClInclude Include="ComponentTransform.h" />
+    <ClInclude Include="CustomImGui.h" />
+    <ClInclude Include="Data.h" />
+    <ClInclude Include="EditorModule.h" />
+    <ClInclude Include="EditorWindow.h" />
+    <ClInclude Include="FileSystemModule.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="Globals.h" />
+    <ClInclude Include="InputModule.h" />
+    <ClInclude Include="InspectorWindow.h" />
+    <ClInclude Include="Log.h" />
+    <ClInclude Include="LuaScript.h" />
+    <ClInclude Include="LuaScripting.h" />
+    <ClInclude Include="md5.h" />
+    <ClInclude Include="MemLeaks.h" />
+    <ClInclude Include="Module.h" />
+    <ClInclude Include="Physics2DModule.h" />
+    <ClInclude Include="ProjectSettingsWindow.h" />
+    <ClInclude Include="RendererModule.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="ResourceManagerModule.h" />
+    <ClInclude Include="ComponentPhysicsBody.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="SceneModule.h" />
+    <ClInclude Include="HierarchyWindow.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="ThirdParty\Box2D\Box2D.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2BroadPhase.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2Collision.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2Distance.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2DynamicTree.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2TimeOfImpact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2ChainShape.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2CircleShape.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2EdgeShape.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2PolygonShape.h" />
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2Shape.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2BlockAllocator.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Draw.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2GrowableStack.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Math.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Settings.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2StackAllocator.h" />
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Timer.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2Body.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2ContactManager.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2Fixture.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2Island.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2TimeStep.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2World.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2WorldCallbacks.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2CircleContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2Contact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2ContactSolver.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonContact.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2DistanceJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2FrictionJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2GearJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2Joint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2MotorJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2MouseJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2PrismaticJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2PulleyJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2RevoluteJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2RopeJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2WeldJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2WheelJoint.h" />
+    <ClInclude Include="ThirdParty\Box2D\Rope\b2Rope.h" />
+    <ClInclude Include="ThirdParty\ImGui\imconfig.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui_impl_glfw.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui_impl_vulkan.h" />
+    <ClInclude Include="ThirdParty\ImGui\imgui_internal.h" />
+    <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h" />
+    <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h" />
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lauxlib.h" />
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lua.h" />
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lua.hpp" />
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\luaconf.h" />
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lualib.h" />
+    <ClInclude Include="ThirdParty\stb\stb_image.h" />
+    <ClInclude Include="ThirdParty\tinyfiledialogs\tinyfiledialogs.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="VulkanModule.h" />
+    <ClInclude Include="WindowModule.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

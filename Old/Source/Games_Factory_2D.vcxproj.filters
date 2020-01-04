@@ -1,0 +1,630 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{d523b2a1-c899-4e97-b6d3-de2f5e44122e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Modules">
+      <UniqueIdentifier>{97dc3147-8c3e-4616-ad5e-150b752f14f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{15907a4c-8a18-466c-ab94-5327cc0e6837}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{6ce2c867-0b80-4dad-81c2-5d94b4814762}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject">
+      <UniqueIdentifier>{e80d776b-a92d-439d-903c-fe4fe43e4a30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject\Components">
+      <UniqueIdentifier>{d1f7ecb5-6fe1-4f21-973b-2da9a152dfa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Editor">
+      <UniqueIdentifier>{92ecefe1-6fdc-44f0-96d1-bb7ed7839f0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty">
+      <UniqueIdentifier>{ddc1b09e-c761-40de-803b-e66d1b6663d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\ImGui">
+      <UniqueIdentifier>{df4dcbbf-9706-4543-80ce-28f0352d9d71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\stb">
+      <UniqueIdentifier>{677cb439-a572-4a94-bbbc-137a0798407e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\tinyfiledialogs">
+      <UniqueIdentifier>{7c50e3e4-2da0-4047-9302-9ee4857b4eb1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Lua">
+      <UniqueIdentifier>{491c595a-963e-4d81-9376-4ed55861e049}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{4f081a4d-0531-4856-95c9-73a14d670166}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\Box2D">
+      <UniqueIdentifier>{2b0cfd86-af6c-4423-9e23-f38a7641d699}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Application.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="InputModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="RendererModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="FileSystemModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceManagerModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="md5.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Component.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentTransform.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentSprite.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="EditorModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="InspectorWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui_demo.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui_draw.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui_impl_glfw.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui_impl_vulkan.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\ImGui\imgui_widgets.cpp">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="HierarchyWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Data.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="AssetsWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Builder.cpp" />
+    <ClCompile Include="ThirdParty\tinyfiledialogs\tinyfiledialogs.c">
+      <Filter>ThirdParty\tinyfiledialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomImGui.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="AnimationWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScript.cpp">
+      <Filter>Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentScript.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="LuaScripting.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Rope\b2Rope.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2Body.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2ContactManager.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2Fixture.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2Island.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2World.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\b2WorldCallbacks.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2CircleContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2Contact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2ContactSolver.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonContact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2DistanceJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2FrictionJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2GearJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2Joint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2MotorJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2MouseJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2PrismaticJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2PulleyJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2RevoluteJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2RopeJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2WeldJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Dynamics\Joints\b2WheelJoint.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Common\b2BlockAllocator.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Draw.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Math.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Settings.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Common\b2StackAllocator.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Common\b2Timer.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2BroadPhase.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2CollideCircle.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2CollideEdge.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2CollidePolygon.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2Collision.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2Distance.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2DynamicTree.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\b2TimeOfImpact.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2ChainShape.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2CircleShape.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2EdgeShape.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\Box2D\Collision\Shapes\b2PolygonShape.cpp">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics2DModule.cpp">
+      <Filter>Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentPhysicsBody.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentBoxCollider.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentCircleCollider.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ComponentCollider.cpp">
+      <Filter>GameObject\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectSettingsWindow.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Application.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="InputModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="RendererModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystemModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceManagerModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="md5.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h" />
+    <ClInclude Include="GameObject.h">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Component.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentTransform.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentSprite.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="InspectorWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imconfig.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imgui.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imgui_impl_glfw.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imgui_impl_vulkan.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imgui_internal.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imstb_rectpack.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imstb_textedit.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h">
+      <Filter>ThirdParty\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="HierarchyWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Data.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetsWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\stb\stb_image.h">
+      <Filter>ThirdParty\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="Builder.h" />
+    <ClInclude Include="ThirdParty\tinyfiledialogs\tinyfiledialogs.h">
+      <Filter>ThirdParty\tinyfiledialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomImGui.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="MemLeaks.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimationWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaScript.h">
+      <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentScript.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lauxlib.h">
+      <Filter>ThirdParty\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lua.h">
+      <Filter>ThirdParty\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lua.hpp">
+      <Filter>ThirdParty\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\luaconf.h">
+      <Filter>ThirdParty\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Lua_5.3.4\include\lualib.h">
+      <Filter>ThirdParty\Lua</Filter>
+    </ClInclude>
+    <ClInclude Include="LuaScripting.h">
+      <Filter>Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Box2D.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Rope\b2Rope.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2Body.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2ContactManager.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2Fixture.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2Island.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2TimeStep.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2World.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\b2WorldCallbacks.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndCircleContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2ChainAndPolygonContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2CircleContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2Contact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2ContactSolver.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndCircleContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2EdgeAndPolygonContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonAndCircleContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Contacts\b2PolygonContact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2DistanceJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2FrictionJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2GearJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2Joint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2MotorJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2MouseJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2PrismaticJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2PulleyJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2RevoluteJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2RopeJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2WeldJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Dynamics\Joints\b2WheelJoint.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2BlockAllocator.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Draw.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2GrowableStack.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Math.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Settings.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2StackAllocator.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Common\b2Timer.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2BroadPhase.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2Collision.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2Distance.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2DynamicTree.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\b2TimeOfImpact.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2ChainShape.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2CircleShape.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2EdgeShape.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2PolygonShape.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\Box2D\Collision\Shapes\b2Shape.h">
+      <Filter>ThirdParty\Box2D</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics2DModule.h">
+      <Filter>Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentPhysicsBody.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentBoxCollider.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentCollider.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ComponentCircleCollider.h">
+      <Filter>GameObject\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectSettingsWindow.h">
+      <Filter>Editor</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
